@@ -2,11 +2,12 @@
   "name": "solidfun",
   "license": "MIT",
   "type": "module",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "types": "dist/index.d.ts",
   "author": "Christopher Carrington",
   "description": "Solid Fundamentals, that help create lovely web sites & mobile applications!",
   "scripts": {
+    "prepublishOnly": "npm run build",
     "build": "tsc -p tsconfig.srcBuild.json && node ./src/srcBuild.js",
     "link": "npm unlink -g solidfun && npm link"
   },
