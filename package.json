@@ -8,7 +8,7 @@
   "description": "Solid Fundamentals, that help create lovely web sites & mobile applications!",
   "scripts": {
     "link": "npm unlink -g solidfun && npm link",
-    "build": "tsc -p tsconfig.build.json && node ./src/srcBuild.js"
+    "build": "tsc -p tsconfig.srcBuild.json && node ./src/srcBuild.js"
   },
   "bin": {
     "fun": "dist/src/cli/cli.js"

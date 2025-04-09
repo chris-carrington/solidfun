@@ -11,6 +11,9 @@
     "strict": true,
     "noEmit": true,
     "types": ["vinxi/types/client"],
-    "isolatedModules": true
+    "isolatedModules": true,
+    "paths": {
+      "fun.config": ["../fun.config.ts"],
+    }
   }
 }

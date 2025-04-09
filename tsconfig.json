@@ -19,7 +19,7 @@
     "noEmit": true,
     "paths": {
       "solidfun": ["./src/index.ts"],
-      "../../fun.config": ["./fun.config.ts"],
+      "fun.config": ["./fun.config.ts"],
     }
   },
   "include": ["**/*"],

@@ -5,7 +5,7 @@
 
 
 import { useSession } from 'vinxi/http'
-import { config, type SessionData } from '../../fun.config'
+import { config, type SessionData } from 'fun.config'
 
 
 
