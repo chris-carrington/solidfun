@@ -1,0 +1,44 @@
+{
+  "name": "solidfun",
+  "license": "MIT",
+  "type": "module",
+  "version": "0.0.1",
+  "types": "dist/index.d.ts",
+  "author": "Christopher Carrington",
+  "description": "Solid Fundamentals, that help create lovely web sites & mobile applications!",
+  "scripts": {
+    "link": "npm unlink -g solidfun && npm link",
+    "build": "tsc -p tsconfig.build.json && node ./src/srcBuild.js"
+  },
+  "bin": {
+    "fun": "dist/src/cli/cli.js"
+  },
+  "devDependencies": {
+    "@solidjs/meta": "^0.29.4",
+    "@solidjs/router": "^0.15.3",
+    "@types/node": "^22.13.17",
+    "esbuild": "^0.25.2",
+    "mongoose": "^8.13.1",
+    "solid-js": "^1.9.5",
+    "typescript": "^5.8.2",
+    "valibot": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@solidjs/router": "^0.15.0",
+    "@solidjs/start": "^1.0.0",
+    "mongoose": "^8.12.1",
+    "solid-js": "^1.0.0",
+    "valibot": "^1.0.0",
+    "vinxi": "^0.5.3"
+  },
+  "keywords": [
+    "solid",
+    "solidjs",
+    "solid-fun",
+    "router",
+    "api",
+    "framework",
+    "typescript",
+    "intellisense"
+  ]
+}
