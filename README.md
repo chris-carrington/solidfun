@@ -49,13 +49,13 @@
     import { env, url } from '@solidfun/env' // get env intel
     import { Route } from '@solidfun/route' // create a route
     import { Layout } from '@solidfun/layout' // create a route layout
-    import { callB4 } from '@solidfun/callB4'
     import { Messages } from '@solidfun/messages'
     import { clientOnly } from '@solidfun/clientOnly'
     import { getMiddleware } from '@solidfun/getMiddleware' // call async fn's before route and/or api fn's
     import { DateTimeFormat } from '@solidfun/dateTimeFormat' // simple Intl.DateTimeFormat() component
     import { ContextProvider } from '@solidfun/contextProvider'
     import { MongoModel, InferMongoModel } from '@solidfun/mongoModel' // more mongo db intellisense
+    import { onMiddlewareRequest } from '@solidfun/onMiddlewareRequest'
     import { beFetch, beGET, bePOST, beParse } from '@solidfun/beFetch' // query api's during render, stream dynamic data when ready & use typed data in components ✨
     import { ValibotSchema, InferValibotSchema } from '@solidfun/valibotSchema' // validate & parse data
     import { createRouteURL, createApiGetUrl, creatApiPostUrl } from '@solidfun/url'
@@ -87,9 +87,9 @@ npm i solidfun
 ```json
 {
   "paths": {
-    "@root/*": ["./*"], // recommended
-    "@lib/*": ["./src/lib/*"], // recommended
-    "@solidfun/*": ["./.solidfun/pub/*"] // required
+    "@src/*": ["./src/*"],
+    "fun.config": ["./fun.config.js"],
+    "@solidfun/*": ["./.solidfun/pub/*"]
   }
 }
 ```
@@ -111,9 +111,9 @@ export default defineConfig({
   vite: { // vite config goes here
     resolve: {
       alias: {
-        '@root': path.resolve(cwd), // recommended
-        '@lib': path.resolve(cwd, 'src/lib'), // recommended
-        '@solidfun': path.resolve(cwd, '.solidfun/pub'), // required
+        '@src': path.resolve(cwd, 'src'),
+        '@solidfun': path.resolve(cwd, '.solidfun/pub'),
+        'fun.config': path.resolve(cwd, './fun.config.js'),
       }
     }
   }
@@ -264,10 +264,6 @@ export const GET = new API({ // POST is also available
 
 
 
-
-
-
-
 ### 🙌 Start the app!
 - `npm run dev`
 - Then navigate to `http://localhost/3000/test` or `http://localhost/3000/api/test` 💛
@@ -285,13 +281,17 @@ export const GET = new API({ // POST is also available
 - Create a `./src/lib` folder
     - Lib is short for library
     - `./src/lib` holds common variables, functions & components
+- Recommended file / folder organization
+    - A thing that does not fit into any other current folders goes in `./src/lib`
+    - If multiple items relate and we wanna put them in a folder, put that folder in `./src`
+    - So files in `./src/lib` and folders in `./src`
 
 
 
 ### Create middleware
 - In Solid Start, if a return is made in a middleware function, that return is given to the client as a response & if a return is not done, the api or route fn is called
 - Solid Fun provides a way to align w/ this functionality via the `b4` prop that is available when creating `API`'s and `Route`'s
-- To ensure `b4` async functions are called, the easieast option is w/ `getMiddleware()` and the most flexible option is with `callB4()`. Here is an example of both @ `./src/lib/middleware.ts`:
+- To ensure `b4` async functions are called, the easieast option is w/ `getMiddleware()` and the most flexible option is with `onMiddlewareRequest()`. Here is an example of both @ `./src/lib/middleware.ts`:
     - Adding middleware w/ the easiest option, 🧚‍♀️ `getMiddleware()`
     - This is the option we recommend starting with:
         ```tsx
@@ -299,15 +299,15 @@ export const GET = new API({ // POST is also available
 
         export default getMiddleware()
         ```
-    - Adding middleware w/ the most flexible option, 🧘‍♀️ `callB4()`
+    - Adding middleware w/ the most flexible option, 🧘‍♀️ `onMiddlewareRequest()`
     - Only recommended if you'd like to add more functionality to your application middleware then what `getMiddleware()` does:
         ```tsx
-        import { callB4 } from '@solidfun/callB4'
         import { createMiddleware } from '@solidjs/start/middleware'
+        import { onMiddlewareRequest } from '@solidfun/onMiddlewareRequest'
 
         export default createMiddleware({
           async onRequest (e) {
-            const res = await callB4(e) // aligns event w/ api or route & if there is a b4() fn defined, calls it
+            const res = await onMiddlewareRequest(e) // aligns event w/ api or route & if there is a b4() fn defined, calls it
 
             // option to fill in w/ custom business logic
 
@@ -319,8 +319,8 @@ export const GET = new API({ // POST is also available
           }
         })
         ```
-    - So either the `getMiddleware()` or the `callB4()` option must be implemented to align Solid middleware w/ Solid Fun `b4()`
-    - If using the callB4 option, some additional information should be known about SolidJS Session's & Middleware so here is information about that:
+    - So either the `getMiddleware()` or the `onMiddlewareRequest()` option must be implemented to align Solid middleware w/ Solid Fun `b4()`
+    - If using the `onMiddlewareRequest()` option, some additional information should be known about SolidJS Session's & Middleware so here is information about that:
         - [Middleware](https://docs.solidjs.com/solid-start/advanced/middleware)
         - [Create Middleware](https://docs.solidjs.com/solid-start/reference/server/create-middleware#createmiddleware)
     - 🚨 Important last Step! @ `./app.config.ts`, tell Solid where the middleware file is, with something like: `middleware: './src/lib/middleware.ts'`
@@ -351,12 +351,12 @@ export const GET = new API({ // POST is also available
         ```tsx
         import { go } from '@solidfun/go'
         import { Route } from '@solidfun/route'
-        import type { B4_Go } from '@solidfun/types'
+        import type { GoResponse } from '@solidfun/types'
 
 
         export default new Route({
           path: '/',
-          async b4(): B4_Go {
+          async b4(): GoResponse {
             return go('/test')
           }
         })
