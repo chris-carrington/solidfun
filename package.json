@@ -7,7 +7,6 @@
   "author": "Christopher Carrington",
   "description": "Solid Fundamentals, that help create lovely web sites & mobile applications!",
   "scripts": {
-    "prepare": "npm run build",
     "build": "tsc -p tsconfig.srcBuild.json && node ./src/srcBuild.js",
     "link": "npm unlink -g solidfun && npm link"
   },
