@@ -18,8 +18,9 @@ export const publicMods = [
   ['route', 'ts'],
   ['clear', 'ts'],
   ['layout', 'ts'],
-  ['callB4', 'ts'],
+  ['beFetch', 'ts'],
   ['session', 'ts'],
+  ['submit', 'tsx'],
   ['messages', 'tsx'],
   ['clientOnly', 'ts'],
   ['onAPIEvent', 'ts'],
@@ -29,6 +30,7 @@ export const publicMods = [
   ['dateTimeFormat', 'tsx'],
   ['contextProvider', 'tsx'],
   ['pathnameToPattern', 'ts'],
+  ['onMiddlewareRequest', 'ts'],
 ]
 
 export const privateMods = [

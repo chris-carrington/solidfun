@@ -10,11 +10,12 @@ import { config, type SessionData } from '../../fun.config'
 
 
 /** 
- * - Thanks to Solid Start, all site accessors, aka all users, will always have a browser cookie
- * - Within this encrypted browser cookie is an object that Solid calls a session
- * - `session.data` is an object that can hold whatever we want
- * - @ `session.data[sessionDataKey]` we hold the sessionData
- * - When sessionData is set, cleared and what is in it is up to you but it's shape must be specified in the `./fun.config.js`
+ * - `setSessionData()` sets `session.data[sessionDataKey]` to `sessionData`
+ * - Thanks to Solid Start, all site accessors, have a browser cookie that has a key and value
+ * - The cookie key is configured  @ `./fun.config.js` and the value is an encrypted & stringified object that Solid calls a session
+ * - `session.data` is an object that can hold whatever we want. @ `session.data[sessionDataKey]` we hold the sessionData
+ * - The `SessionData` type is configured via JSDOC @ `./fun.config.js`
+ * - & session data is added onto each request @ `onMiddlewareRequest()` 
  */
 export async function setSessionData(sessionData: SessionData): Promise<void> {
   await _setSessionData(await getSession(), sessionData)
@@ -23,13 +24,24 @@ export async function setSessionData(sessionData: SessionData): Promise<void> {
 
 
 /** 
- * - Thanks to Solid Start, all site accessors, aka all users, will always have a browser cookie
- * - Within this encrypted browser cookie is an object that Solid calls a session
- * - `session.data` is an object that can hold whatever we want
- * - @ `session.data[sessionDataKey]` we hold the sessionData
- * - When sessionData is set, cleared and what is in it is up to you but it's shape must be specified in the `./fun.config.js`
- * - `SessionData`: The shape of this data, defined @ `./fun.cofig.js`
- * - Returns: `null` if not defined or `SessionData` if defined
+ * - `getSessionData()` returns: `null` if not defined or `SessionData` if defined
+ * - It is meant to be an inner function w/ business logic wrapped around it, w/in your application, for example:
+    ```tsx
+    import { go } from '@solidfun/go'
+    import type { SessionData } from 'fun.config'
+    import { _getSessionData } from '@solidfun/session'
+
+
+    export async function parseSessionData(): Promise<SessionData> {
+      const sessionData = await _getSessionData()
+
+      if (!sessionData) throw go('/sign-in/:messageId?', {messageId: '1'})
+
+      return sessionData
+    }
+```
+ * - Next anwhere => `import { parseSessionData } from '@src/lib/parseSessionData'`
+ * - The `SessionData` type is configured via JSDOC @ `./fun.config.js`
  */
 export async function getSessionData(): Promise<null | SessionData> {
   const session = await getSession()
@@ -40,13 +52,10 @@ export async function getSessionData(): Promise<null | SessionData> {
 
 
 /** 
- * - Thanks to Solid Start, all site accessors, aka all users, will always have a browser cookie
- * - Within this encrypted browser cookie is an object that Solid calls a session
- * - `session.data` is an object that can hold whatever we want
- * - @ `session.data[sessionDataKey]` we hold the sessionData
- * - When sessionData is set, cleared and what is in it is up to you but it's shape must be specified in the `./fun.config.js`
- * - @ session.data[sessionDataKey] we hold the SessionData
  * - `clearSessionData()` sets `session.data[sessionDataKey]` to `null`
+ * - Thanks to Solid Start, all site accessors, have a browser cookie that has a key and value
+ * - The cookie key is configured  @ `./fun.config.js` and the value is an encrypted & stringified object that Solid calls a session
+ * - `session.data` is an object that can hold whatever we want. @ `session.data[sessionDataKey]` we hold the sessionData & `clearSessionData()` sets this value to null
  */
 export async function clearSessionData(): Promise<void> {
   await _setSessionData(await getSession(), null)

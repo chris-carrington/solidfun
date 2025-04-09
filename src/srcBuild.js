@@ -19,5 +19,5 @@ try {
     ...publicMods.map(([name, ext]) => copyFile(join(cwd, 'src/pub', `${name}.${ext}`), join(distDir, `${name}.txt`))),
   ])
 } catch (e) {
-  console.error('❌ Esbuild Error:', e)
+  console.error('❌ srcBuild:', e)
 }

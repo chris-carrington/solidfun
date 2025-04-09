@@ -34,27 +34,27 @@ export type B4 = (event: FetchEvent) => Promise<any>
 
 
 /**
- * - The purpose of this type is to stop the typescript cricular reference error when placing a `go()` w/in a `b4()`
+ * - One purpose of this type is to stop the typescript cricular reference error when placing a `go()` w/in a `b4()`
  * - Explanation:
  *     - To provide intellisense, ``go()`` needs all routes info
  *     - So if we place a `go()` in a `b4()`, we ask for the information about all routes, while creating a route
  *     - This is difficult for typescript to handle
- *     - This return type allows us to have intellisense @ `go()` AND tell typescript to stop looking for all route info when defining the return type
+ *     - This return type allows us to have intellisense @ `go()` AND tell typescript to stop looking for all route info
  *     - Example:
        ```tsx
           import { go } from '@solidfun/go'
           import { Route } from '@solidfun/route'
-          import type { B4_Go } from '@solidfun/types'
+          import type { GoResponse } from '@solidfun/types'
 
           export default new Route({
             path: '/',
-            async b4(): B4_Go {
+            async b4(): GoResponse {
               return go('/example')
             }
           })
       ```
  */
-export type B4_Go = Promise<Awaited<ReturnType<typeof redirect>>> 
+export type GoResponse = Promise<Awaited<ReturnType<typeof redirect>>> 
 
 
 /**
@@ -81,10 +81,6 @@ export type VoidResponse = BE_Response
 
 /** If messages are in the response, this is the type */
 export type BE_Messages_Response = Record<string, string[]>
-
-
-// /** Helps create a type-safe mongoose projection for schema fields */
-export type MongoProjection<T> = { [K in keyof T]?: 0 | 1 }
 
 
 /** path to a route => type for route params */
@@ -141,8 +137,8 @@ export type POST_Body<T_POST_Paths extends POST_Paths> =
 export type GET_fn_Response<T_GET_Path extends GET_Paths> =
   typeof gets extends Record<any, any>
     ? T_GET_Path extends keyof typeof gets
-      ? typeof gets[T_GET_Path]['fn'] extends (...args: any[]) => Promise<infer T_Fn_Response> // IF this path has an API object, w/ a "fn" that returns a promise THEN Infer the return type of that promise
-        ? T_Fn_Response // return the type for the response of the function
+      ? typeof gets[T_GET_Path] extends API<any, infer T_Fn_Response>
+        ? T_Fn_Response
         : never
       : never
     : never;

@@ -6,9 +6,11 @@
 
 import { getCookie } from 'vinxi/http'
 import { buildURL } from '../buildURL'
+import { url as baseUrl } from './env'
+import { config } from '../../fun.config'
 import { redirect } from '@solidjs/router'
 import { query, createAsync } from '@solidjs/router'
-import type { GET_Paths, GET_Params, POST_Paths, POST_Body, POST_Params } from './types'
+import type { GET_Paths, GET_Params, POST_Paths, POST_Body, POST_Params, GET_fn_Response } from './types'
 
 
 
@@ -28,8 +30,8 @@ export const beFetch = query
  * - Typically called w/in a `beFetch()` during component render
  * - on error => `console.error()` the error and return null or error based on `options.returnError`, defaults to return null
  */
-export async function beGET<T extends GET_Paths>(path: T, options?: { params?: GET_Params<T>, returnError: boolean }) {
-  return await _beAPI({ url: buildURL(path, options?.params), method: 'GET', cookieKey: 'config.cookieKey', returnError: options?.returnError })
+export async function beGET<T extends GET_Paths>(path: T, options?: { params?: GET_Params<T>, returnError: boolean }): Promise<GET_fn_Response<T>> {
+  return await _beAPI({ url: buildURL(path, options?.params), method: 'GET', cookieKey: config.cookieKey, returnError: options?.returnError })
 }
 
 
@@ -40,7 +42,7 @@ export async function beGET<T extends GET_Paths>(path: T, options?: { params?: G
  * - on error => `console.error()` the error and return null or error based on `options.returnError`, defaults to return null
  */
 export async function bePOST<T extends POST_Paths>(path: T, options?: { params?: POST_Params<T>, body?: POST_Body<T>, returnError: boolean }) {
-  return await _beAPI({ url: buildURL(path, options?.params), method: 'POST', cookieKey: 'config.cookieKey', body: options?.body, returnError: options?.returnError })
+  return await _beAPI({ url: buildURL(path, options?.params), method: 'POST', cookieKey: config.cookieKey, body: options?.body, returnError: options?.returnError })
 }
 
 
@@ -75,7 +77,7 @@ export async function _beAPI({ url, cookieKey, method = 'GET', body, returnError
         break
     }
 
-    const response = await fetch(url, requestInit)
+    const response = await fetch(baseUrl + url, requestInit)
 
     if (response.redirected) return redirect(response.url)
     else return await response.json()

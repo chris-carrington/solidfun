@@ -124,7 +124,7 @@ export default defineConfig({
 
 ### Create a `.env` file:
 - This password is used to encrypt/decrypt cookie values
-- It must be at least 32 characters longs b/c of how web crypto works, example:
+- It must be at least 32 characters long b/c of how web crypto works, example:
 ```
 SESSION_CRYPT_PASSWORD=a94fc8e3b1024d2cc99ee0e874a4bc79
 ```
@@ -135,7 +135,7 @@ SESSION_CRYPT_PASSWORD=a94fc8e3b1024d2cc99ee0e874a4bc79
 1. `./src/app/`
     - Route & layout `tsx` files go here
 2. `./src/api/`
-    - GET & POST functions will go here
+    - GET & POST functions go here
 - Recomendations:
     - Don't use the `./src/routes` folder for your `app` or `api` please
     - If the `app` and `api` folders are the same folder, all good, all will still work!
@@ -258,7 +258,7 @@ export const GET = new API({ // POST is also available
 ### Update package.json
 ```
 "scripts": {
-    "dev": "fun build local && vinxi dev",
+  "dev": "fun build local && vinxi dev",
 }
 ```
 

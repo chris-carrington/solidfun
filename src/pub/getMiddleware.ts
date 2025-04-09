@@ -4,26 +4,27 @@
  */
 
 
-import { callB4 } from './callB4'
-import { createMiddleware } from '@solidjs/start/middleware'
+import { onMiddlewareRequest } from './onMiddlewareRequest'
+import { createMiddleware, type ResponseMiddleware } from '@solidjs/start/middleware'
 
 
 /**
- * - How to use: `export default getMiddleware()`
- * - In Solid Start if middleware returns that response is given to the client
- * - Solid Fun aligns w/ this functionality to do `callB4()` calls during middleware
- * - `getMiddleware()` returns a middleware object with all this wired up
- * - If you would love additional logic in your middleware while maintaining `callB4()` logic, just do as seen in the `getMiddleware()` by:
- *     - Creating the middleware w/ `createMiddleware()`
- *     - On request get the `callB4()` `response`
- *     - & if the `response` is truthy return it
- * - & then if then you'd love to add more to your middeware, yay, all good! 🙌
+ * - Returns a solid start middleware object configured to work w/ Solid Fun
+ * - The lower level `onMiddlewareRequest()` is also available if you'd love closer access to your middleware
+ * - Example `getMiddleware()` use:
+    ```tsx
+    import { getMiddleware } from '@solidfun/getMiddleware'
+
+    export default getMiddleware()
+    ```
+ * @param onBeforeResponse `createMiddleware` takes an `onRequest` and an `onBeforeResponse`, this is the `onBeforeResponse`
  */
-export function getMiddleware() {
+export function getMiddleware(options: { onBeforeResponse?: ResponseMiddleware | ResponseMiddleware[] } = {}) {
   return createMiddleware({
+    onBeforeResponse: options.onBeforeResponse,
     async onRequest (e) {
-      const res = await callB4(e)
+      const res = await onMiddlewareRequest(e)
       if (res) return res
-    }
+    },
   })
 }

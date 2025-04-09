@@ -17,7 +17,7 @@ export async function cliBuild(cwd: string) {
   const env = getEnv()
   const config = await getConfig(cwd)
   const baseUrl = getBaseUrl(env, config)
-  const dirWrite = join(cwd, '.solidfun')
+  const dirWriteRoot = join(cwd, '.solidfun')
   const dirWritePub = join(cwd, '.solidfun/pub')
   const dirRead = dirname(fileURLToPath(import.meta.url))
 
@@ -27,7 +27,7 @@ export async function cliBuild(cwd: string) {
     appInfo(writes, layouts, noLayoutRoutes, resolve(cwd, config.appDir)),
   ])
 
-  await write({ env, config, writes, layouts, noLayoutRoutes, baseUrl, dirRead, dirWrite, dirWritePub, pubTypesContent })
+  await write({ env, config, writes, layouts, noLayoutRoutes, baseUrl, dirRead, dirWriteRoot, dirWritePub, pubTypesContent })
 }
 
 
@@ -125,19 +125,19 @@ async function appInfo(writes: Writes, layouts: Layouts, noLayoutRoutes: Route[]
 }
 
 
-async function write({ env, config, writes, layouts, noLayoutRoutes, baseUrl, dirRead, dirWrite, dirWritePub, pubTypesContent }: { env: string, config: FunConfig, writes: Writes, layouts: Layouts, noLayoutRoutes: Route[], baseUrl: string, dirRead: string, dirWrite: string, dirWritePub: string, pubTypesContent: string }) {
+async function write({ env, config, writes, layouts, noLayoutRoutes, baseUrl, dirRead, dirWriteRoot, dirWritePub, pubTypesContent }: { env: string, config: FunConfig, writes: Writes, layouts: Layouts, noLayoutRoutes: Route[], baseUrl: string, dirRead: string, dirWriteRoot: string, dirWritePub: string, pubTypesContent: string }) {
   const space = '\n'
 
-  await mkdir(dirWrite, { recursive: true })
+  await mkdir(dirWriteRoot, { recursive: true })
   await mkdir(dirWritePub, { recursive: true })
 
   await Promise.all([
-    fsWrite({ dirWrite, content: getApiContent(writes, space), fileName: 'apis.ts' }),
-    fsCopy({ dirRead, dirWrite, srcFileName: 'tsconfig.cliBuild.txt', aimFileName: 'tsconfig.json' }),
-    fsWrite({ dirWrite: dirWritePub, content: getEnvContent(env, config, baseUrl), fileName: 'env.ts' }),
-    fsWrite({ dirWrite: dirWritePub, content: getTypesContent(writes, pubTypesContent), fileName: 'types.d.ts' }),
-    fsWrite({ dirWrite: dirWritePub, content: getAppContent(layouts, noLayoutRoutes, space), fileName: 'app.tsx' }),
-    privateMods.map(([filename, ext]) => fsCopy({ dirRead, dirWrite, srcFileName: filename +'.txt', aimFileName: filename +'.'+ ext, })),
+    fsWrite({ dir: dirWritePub, content: getApiContent(writes, space), fileName: 'apis.ts' }),
+    fsCopy({ dirRead, dirWrite: dirWriteRoot, srcFileName: 'tsconfig.cliBuild.txt', aimFileName: 'tsconfig.json' }),
+    fsWrite({ dir: dirWritePub, content: getEnvContent(env, config, baseUrl), fileName: 'env.ts' }),
+    fsWrite({ dir: dirWritePub, content: getTypesContent(writes, pubTypesContent), fileName: 'types.d.ts' }),
+    fsWrite({ dir: dirWritePub, content: getAppContent(layouts, noLayoutRoutes, space), fileName: 'app.tsx' }),
+    privateMods.map(([filename, ext]) => fsCopy({ dirRead, dirWrite: dirWriteRoot, srcFileName: filename +'.txt', aimFileName: filename +'.'+ ext, })),
     publicMods.map(([filename, ext]) => fsCopy({ dirRead, dirWrite: dirWritePub, srcFileName: filename +'.txt', aimFileName: filename +'.'+ ext, })),
   ])
 
@@ -145,9 +145,9 @@ async function write({ env, config, writes, layouts, noLayoutRoutes, baseUrl, di
 }
 
 
-async function fsWrite({ dirWrite, content, fileName }: { dirWrite: string, content: string, fileName: string }) {
-  await writeFile(resolve(join(dirWrite, fileName)), content, 'utf8')
-  if (cliVerbose()) console.log('✅ Wrote: ' + join(dirWrite, fileName))
+async function fsWrite({ dir, content, fileName }: { dir: string, content: string, fileName: string }) {
+  await writeFile(resolve(join(dir, fileName)), content, 'utf8')
+  if (cliVerbose()) console.log('✅ Wrote: ' + join(dir, fileName))
 }
 
 

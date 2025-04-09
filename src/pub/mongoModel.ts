@@ -33,3 +33,8 @@ export class MongoModel<TSchema extends Schema, TInfer = InferSchemaType<TSchema
  * - IF "T" is a "Model" THEN set "U" to Model's 2nd type, which is the infered type of this.schema, aka InferSchemaType<typeof this.schema>
  */
 export type InferMongoModel<T extends MongoModel<any, any>> = T extends MongoModel<any, infer U> ? U : never
+
+
+
+/** Helps create a type-safe mongoose projection for schema fields */
+export type MongoProjection<T> = { [K in keyof T]?: 0 | 1 }
