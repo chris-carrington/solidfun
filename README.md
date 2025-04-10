@@ -9,11 +9,18 @@
 ## 🧐 Intellisense everywhere?
 - Yes!
 - How?
-    - `npm install solidfun` ➡️ `npx fun build` or
-    - `npm install -g solidfun` ➡️ `fun build`
+    - Option 1️⃣: Global Install, example:
+        1. `npm install -g solidfun`
+        1. `fun build local`
+    - Option 2️⃣: Local Install, example:
+        1. `npm install solidfun`
+        1. `npx fun build local`
+    - An then w/ either option, package.json example:
+        - Example: `"dev": "fun build local && vinxi dev"`
+        - So no `npx` is ever required here ✅
 - Explain:
     - `fun build` is a blazingly fast command that creates types based on the current state of your application
-    - These types are then used to give you `intellisense` (compile time guidance) at all of the following locations:
+    - These types provide `intellisense` (compile time guidance) at all of the following locations:
       - Config
           - `const config = {}`
       - URL's:
