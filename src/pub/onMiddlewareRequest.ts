@@ -8,7 +8,7 @@
 import { API } from './api'
 import { routes } from './app'
 import { Route } from './route'
-import { gets, posts } from '../apis'
+import { gets, posts } from './apis'
 import { getSessionData } from './session'
 import type { FetchEvent } from './types'
 import { eventToPathname } from '../eventToPathname'

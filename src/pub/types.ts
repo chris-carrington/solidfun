@@ -7,7 +7,7 @@
 import type { API } from './api'
 import type { routes } from './app'
 import type { Route } from './route'
-import type { gets, posts } from '../apis'
+import type { gets, posts } from './apis'
 import type { redirect } from '@solidjs/router'
 import type { APIEvent as SolidAPIEvent, FetchEvent as SolidFetchEvent } from '@solidjs/start/server'
 
