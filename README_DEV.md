@@ -1,15 +1,16 @@
 # 💖 FAQ
 ### How may I deploy a new version?
-1. ⬆️ Semantic increment the `package.json` version
+1. ⬆️ Semantic version increment the `package.json`
 1. 💬 Create Git Commit
+    - For the version increment
     - Convention example:
-    - `🥳 yas! Emoji's not required!`
+        - `v0.0.3`
 1. 🏷️ Create Git Tag 
     - Convention example:
-    - `v0.0.3`
+        - `v0.0.6`
     - To do this in `Github Desktop`
         - Click `History`
-        - Right click the commit you'd love to tag
+        - Right click the commit to tag
         - Click `Create Tag...`
 1. 🚀 Pust to GitHub
 1. 📦 Push  to NPM
