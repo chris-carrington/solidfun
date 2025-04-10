@@ -73,16 +73,8 @@ function addQuestion(mod: string, text: string, questions: Question[]) {
 
 /** From: "fun build local --all --verbose" ➡️ To: { --all, --verbose } */
 function getOptions() {
-  const startIndex = 4
-  const options: Options = new Set()
-
-  if (startIndex <= process.argv.length) {
-    for (let i = startIndex; i < process.argv.length; i++) {
-      options.add(process.argv[i] as string)
-    }
-  }
-
-  return options
+  const available = new Set(['verbose', 'all', 'solid', 'mongoose', 'valibot']) 
+  return new Set(process.argv.filter(arg => arg.startsWith('--') && available.has(arg)))
 }
 
 

@@ -1,6 +1,13 @@
 # 💖 FAQ
 ### How may I deploy a new version?
-1. ⬆️ Semantic version increment the `package.json`
+1. ⬆️ Upgrade version in `package.json`
+    - `MAJOR.MINOR.PATCH`
+    - `npm version patch`
+        - Update includes backward compatible bug fixes or small changes that does not add new features
+    - `npm version minor`
+        - Update includes new features added in a backward-compatible way
+    - `npm version major`
+        - Update includes new features added in a not backward-compatible way
 1. 💬 Create Git Commit
     - For the version increment
     - Convention example:
@@ -12,7 +19,7 @@
         - Click `History`
         - Right click the commit to tag
         - Click `Create Tag...`
-1. 🚀 Pust to GitHub
+1. 🚀 Push to GitHub
 1. 📦 Push  to NPM
     - Bash: `npm run publish`
 ### I did a git tag, but now I need to do another git commit, what do I do?
