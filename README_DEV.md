@@ -3,7 +3,7 @@
 1. ⬆️ Semantic increment the `package.json` version
 1. 💬 Create Git Commit
     - Convention is `version` + `message`, example:
-    - `v0.0.3: 🥳 yas!`
+    - `v0.0.3 🥳 yas!`
 1. 🏷️ Create Git Tag 
     - Convention is `version`, example:
     - `v0.0.3`
