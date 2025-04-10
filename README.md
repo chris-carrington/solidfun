@@ -7,26 +7,32 @@
 
 
 ## 🧐 Intellisense everywhere?
-- The blazingly fast `fun build` 💨 creates types that provide `intellisense` (compile time guidance) based on the current state of your application, to all of the following:
-    - Config
-        - `const config = {}`
-    - URL's:
-        - `createRouteUrl()`
-        - `createApiGetUrl()`
-        - `creatApiPostUrl()`
-    - Routes:
-        - `go()` backend redirect
-        - `<A />` frontend anchor component ✅ 
-        - `<App />`
-    - API:
-        - `beGET()`
-        - `bePOST()`
-        - `fe.GET()`
-        - `fe.POST()`
-    - Validate & Parse Data
-        - `schema.parse()`
-    - Current Environment Intel
-        - `import { env, url } from '@solidfun/env'`
+- Yes!
+- How?
+    - `npm install solidfun` to get `npx fun build` or
+    - `npm install -g solidfun` to get `fun build` (just how npm does cli's)
+- Explain:
+    - `fun build` is a blazingly fast command that creates types based on the current state of your application
+    - These types are then used to give you `intellisense` (compile time guidance) at all of the following locations:
+      - Config
+          - `const config = {}`
+      - URL's:
+          - `createRouteUrl()`
+          - `createApiGetUrl()`
+          - `creatApiPostUrl()`
+      - Routes:
+          - `go()` backend redirect
+          - `<A />` frontend anchor component ✅ 
+          - `<App />`
+      - API:
+          - `beGET()`
+          - `bePOST()`
+          - `fe.GET()`
+          - `fe.POST()`
+      - Validate & Parse Data
+          - `schema.parse()`
+      - Current Environment Intel
+          - `import { env, url } from '@solidfun/env'`
 
 
 
@@ -77,7 +83,7 @@
 nvm use 22
 npm create solid # typescript is required
 npm i @types/node -D
-npm i solidfun
+npm install -g solidfun
 ```
 
 
@@ -281,10 +287,11 @@ export const GET = new API({ // POST is also available
 - Create a `./src/lib` folder
     - Lib is short for library
     - `./src/lib` holds common variables, functions & components
-- Recommended file / folder organization
-    - A thing that does not fit into any other current folders goes in `./src/lib`
-    - If multiple items relate and we wanna put them in a folder, put that folder in `./src`
+- Recommended `Solid Fun` file & folder organization!
+    - A file that does not fit into any other current folders goes in `./src/lib`
+    - If multiple items relate put em in a folder in `./src`
     - So files in `./src/lib` and folders in `./src`
+    - So then when you open `./src` you'll see all your stuff & head to the library for helpful unique items!
 
 
 
