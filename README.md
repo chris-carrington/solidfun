@@ -67,10 +67,10 @@
     import { getMiddleware } from '@solidfun/getMiddleware' // call async fn's before route and/or api fn's
     import { DateTimeFormat } from '@solidfun/dateTimeFormat' // simple Intl.DateTimeFormat() component
     import { ContextProvider } from '@solidfun/contextProvider'
-    import { MongoModel, InferMongoModel } from '@solidfun/mongoModel' // more mongo db intellisense
+    import { MongoModel, InferMongoModel } from '@solidfun/mongoose' // more mongo db intellisense
     import { onMiddlewareRequest } from '@solidfun/onMiddlewareRequest'
     import { beFetch, beGET, bePOST, beParse } from '@solidfun/beFetch' // query api's during render, stream dynamic data when ready & use typed data in components ✨
-    import { ValibotSchema, InferValibotSchema } from '@solidfun/valibotSchema' // validate & parse data
+    import { ValibotSchema, InferValibotSchema } from '@solidfun/valibot' // validate & parse data
     import { createRouteURL, createApiGetUrl, creatApiPostUrl } from '@solidfun/url'
     import { setSessionData, getSessionData, clearSessionData } from '@solidfun/session' // auth
     ```
@@ -159,7 +159,7 @@ SESSION_CRYPT_PASSWORD=a94fc8e3b1024d2cc99ee0e874a4bc79
 
 
 ### 🥳 Set fun config
-- @ `./src/fun.config.js`
+- @ `./fun.config.js`
 - The `SessionData` export type below is configurable
     - It lets your app know the shape of the data you'd love to store in each session
     - Thanks to Solid Start users always have a session, and you can optionally store data in that session

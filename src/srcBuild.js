@@ -18,6 +18,8 @@ try {
     ...privateMods.map(([name, ext]) => copyFile(join(cwd, 'src', `${name}.${ext}`), join(distDir, `${name}.txt`))),
     ...publicMods.map(([name, ext]) => copyFile(join(cwd, 'src/pub', `${name}.${ext}`), join(distDir, `${name}.txt`))),
   ])
+
+  console.log('✅ Built Solid Fun!')
 } catch (e) {
   console.error('❌ srcBuild:', e)
 }
