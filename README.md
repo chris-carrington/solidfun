@@ -9,8 +9,8 @@
 ## 🧐 Intellisense everywhere?
 - Yes!
 - How?
-    - `npm install solidfun` to get `npx fun build` or
-    - `npm install -g solidfun` to get `fun build` (just how npm does cli's)
+    - `npm install solidfun` ➡️ `npx fun build` or
+    - `npm install -g solidfun` ➡️ `fun build`
 - Explain:
     - `fun build` is a blazingly fast command that creates types based on the current state of your application
     - These types are then used to give you `intellisense` (compile time guidance) at all of the following locations:

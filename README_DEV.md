@@ -1,11 +1,11 @@
-# 🥸 FAQ
+# 💖 FAQ
 ### How may I deploy a new version?
 1. ⬆️ Semantic increment the `package.json` version
 1. 💬 Create Git Commit
-    - Convention is `version` + `message`, example:
-    - `v0.0.3 🥳 yas!`
+    - Convention example:
+    - `🥳 yas! Emoji's not required!`
 1. 🏷️ Create Git Tag 
-    - Convention is `version`, example:
+    - Convention example:
     - `v0.0.3`
     - To do this in `Github Desktop`
         - Click `History`
