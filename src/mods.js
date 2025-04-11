@@ -23,6 +23,7 @@ export const publicMods = [
   ['submit', 'tsx'],
   ['valibot', 'ts'],
   ['mongoose', 'ts'],
+  ['doSubmit', 'ts'],
   ['messages', 'tsx'],
   ['clientOnly', 'ts'],
   ['onAPIEvent', 'ts'],
