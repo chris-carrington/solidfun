@@ -2,7 +2,7 @@
   "name": "solidfun",
   "license": "MIT",
   "type": "module",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "types": "dist/index.d.ts",
   "author": "Christopher Carrington",
   "description": "Solid Fundamentals, that help create lovely web sites & mobile applications!",
