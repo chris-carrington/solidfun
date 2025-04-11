@@ -6,74 +6,93 @@ import { publicMods, privateMods } from '../mods.js'
 import { mkdir, readdir, writeFile, readFile, copyFile } from 'node:fs/promises'
 
 
+
+class Questions {
+  array: Question[] = []
+
+  map = {
+    valibot: new Question('valibot', '🚨 Include Valibot Fundamentals?'),
+    mongoose: new Question('mongoose', '📀 Include Mongoose Fundamentals?'),
+  }
+
+  constructor() {
+    this.array = [ // here we specify the question order
+      this.map.mongoose,
+      this.map.valibot
+    ]
+  }
+}
+
+
+
 /**
- * - Build types, components and functions for an environment
+ * - Build types, components and functions for an `Solid Fun` environment!
  * - Options:
- *     - `--verbose`: Log what is happening
- *     - `--all`: No wizard + include fundamentals for mongoose and valibot
- *     - `--solid`: No wizard + do not include fundamentals for  mongoose or valibot
- *     - `--mongoose`: No wizard + include fundamentals for mongoose
- *     - `--valibot`: No wizard + include fundamentals for valibot
+ *     - `--verbose`: Log what's happening + extra logs during wizard
+ *     - `--all`: No wizard + include mongoose and valibot fundamentals
+ *     - `--solid`: No wizard + do not include mongoose or valibot fundamentals
+ *     - `--mongoose`: No wizard + include mongoose fundamentals
+ *     - `--valibot`: No wizard + include valibot fundamentals
+ * - Examples:
+ *     - `fun build local`
+ *     - `fun build prod --all`
+ *     - `fun build local --solid --verbose`
  */
-export async function cliBuild(cwd: CWD) {
-  const options = getOptions()
+export async function cliBuild(cwd: CWD) {  
+  const { options, questions, blackList, wizardRequested } = initVariables()
 
-  /** The modules that we will not build */
-  const modBlackList: ModBlackList = new Set()
+  if (wizardRequested) await showWizard(questions)
 
-  /** Start w/ 'true' and then if they as for anything specific flip to 'false' */
-  let showWizard = true
-
-  const questions: Question[] = []
-  const mongooseQuestion = addQuestion('mongoose', '📀 Include Mongoose Fundamentals?', questions)
-  const valibotQuestion = addQuestion('valibot', '🚨 Include Valibot Fundamentals?', questions)
-
-  if (options.has('--solid')) showWizard = false
-
-  if (options.has('--mongoose')) {
-    showWizard = false
-    mongooseQuestion.answer = 'yes'
-  }
-
-  if (options.has('--valibot')) {
-    showWizard = false
-    valibotQuestion.answer = 'yes'
-  }
-
-  if (options.has('--all')) {
-    showWizard = false    
-    questions.forEach(q => q.answer = 'yes')
-  }
-
-  if (showWizard) {
-    process.stdin.setRawMode(true)
-    process.stdin.resume()
-    process.stdin.setEncoding('utf8')
-
-    for (const q of questions) {
-      q.answer = await askQuestion(q)
-    }
-  }
-
-  if (valibotQuestion.answer === 'no') modBlackList.add('valibot')
-  if (mongooseQuestion.answer === 'no') modBlackList.add('mongoose')
-
-  await readWrite(cwd, questions, options, showWizard, modBlackList)
-  process.stdin.setRawMode(false) // reset stdin
-  process.stdin.pause() // stops reading
+  blackList.populate(questions)
+  await readWrite(cwd, options, questions, blackList, wizardRequested)
 }
 
 
-function addQuestion(mod: string, text: string, questions: Question[]) {
-  const question: Question = { mod, text, answer: 'no' } // start w/ 'no' and then based on options we'll flip to 'yes'
-  questions.push(question)
-  return question
+async function showWizard(questions: Questions) {
+  process.stdin.setRawMode(true)
+  process.stdin.resume()
+  process.stdin.setEncoding('utf8')
+
+  for (const q of questions.array) {
+    q.answer = await askQuestion(q)
+  }
+
+  process.stdin.setRawMode(false) 
+  process.stdin.pause()
 }
 
 
-/** From: "fun build local --all --verbose" ➡️ To: { --all, --verbose } */
-function getOptions() {
-  return new Set(process.argv.filter(arg => arg.startsWith('--')))
+function initVariables() {
+  const options = new Options()
+  const questions = new Questions()
+  const blackList = new ModuleBlackList()
+
+  /** start w/ 'true' and then if they as for anything specific flip to 'false' */
+  let wizardRequested = true
+
+  if (options.has('solid')) wizardRequested = false // solid is the default so nothing else changes but a wizard bypass
+
+  if (options.has('mongoose')) {
+    wizardRequested = false
+    questions.map.mongoose.answer = 'yes'
+  }
+
+  if (options.has('valibot')) {
+    wizardRequested = false
+    questions.map.valibot.answer = 'yes'
+  }
+
+  if (options.has('all')) { // yes to all
+    wizardRequested = false    
+    questions.array.forEach(q => q.answer = 'yes')
+  }
+
+  return {
+    options,
+    blackList,
+    questions,
+    wizardRequested,
+  }
 }
 
 
@@ -116,7 +135,7 @@ function askQuestion(question: Question): Promise<Answer> {
 }
 
 
-async function readWrite(cwd: string, questions: Question[], options: Options, showWizard: boolean, modBlackList: ModBlackList) {
+async function readWrite(cwd: string,  options: Options, questions: Questions, blackList: ModuleBlackList, wizardRequested: boolean) {
   const layouts: Layouts = new Map()
   const noLayoutRoutes: Route[] = [] 
   let apiCounts: APICounts = { GET: 0, POST: 0 }
@@ -135,7 +154,7 @@ async function readWrite(cwd: string, questions: Question[], options: Options, s
     appInfo(writes, layouts, noLayoutRoutes, resolve(cwd, config.appDir)),
   ])
 
-  await write({ env, config, writes, layouts, noLayoutRoutes, baseUrl, dirRead, dirWriteRoot, dirWritePub, pubTypesContent, questions, options, showWizard, modBlackList })
+  await write({ env, config, writes, layouts, noLayoutRoutes, baseUrl, dirRead, dirWriteRoot, dirWritePub, pubTypesContent, questions, options, wizardRequested, blackList })
 }
 
 
@@ -148,7 +167,7 @@ async function getConfig(cwd: CWD, options: Options): Promise<FunConfig> {
   const config = module?.config ? module.config : null
 
   if (!config) throw new Error(cliErrors.noConfig)
-  if (options.has('--verbose')) console.log(`✅ Read: ${configPath}`)
+  if (options.has('verbose')) console.log(`✅ Read: ${configPath}`)
 
   return config
 }
@@ -186,7 +205,6 @@ async function apiInfo(writes: Writes, apiCounts: APICounts, dir: string): Promi
     }
   }
 }
-
 
 
 /** Define the fsPath, fsLayoutPath, and urlPath for each route w/in the provided directory */
@@ -232,7 +250,7 @@ async function appInfo(writes: Writes, layouts: Layouts, noLayoutRoutes: Route[]
 }
 
 
-async function write({ env, config, writes, layouts, noLayoutRoutes, baseUrl, dirRead, dirWriteRoot, dirWritePub, pubTypesContent, options, questions, showWizard, modBlackList }: { env: string, config: FunConfig, writes: Writes, layouts: Layouts, noLayoutRoutes: Route[], baseUrl: string, dirRead: string, dirWriteRoot: string, dirWritePub: string, pubTypesContent: string, options: Options, questions: Question[], showWizard: boolean, modBlackList: ModBlackList }) {
+async function write({ env, config, writes, layouts, noLayoutRoutes, baseUrl, dirRead, dirWriteRoot, dirWritePub, pubTypesContent, options, questions, wizardRequested, blackList }: { env: string, config: FunConfig, writes: Writes, layouts: Layouts, noLayoutRoutes: Route[], baseUrl: string, dirRead: string, dirWriteRoot: string, dirWritePub: string, pubTypesContent: string, options: Options, questions: Questions, wizardRequested: boolean, blackList: ModuleBlackList }) {
   const space = '\n'
 
   await mkdir(dirWritePub, { recursive: true })
@@ -245,12 +263,12 @@ async function write({ env, config, writes, layouts, noLayoutRoutes, baseUrl, di
     fsWrite({ dir: dirWritePub, content: getAppContent(layouts, noLayoutRoutes, space), fileName: 'app.tsx', options }),
     privateMods.map(([filename, ext]) => fsCopy({ dirRead, dirWrite: dirWriteRoot, srcFileName: filename +'.txt', aimFileName: filename +'.'+ ext, options })),
     publicMods
-      .filter(mod => !modBlackList.has(mod[0] as string))
+      .filter(mod => !blackList.mods.has(mod[0] as string))
       .map(([filename, ext]) => fsCopy({ dirRead, dirWrite: dirWritePub, srcFileName: filename +'.txt', aimFileName: filename +'.'+ ext, options })),
   ])
 
-  if (!options.has('--verbose')) {
-    if (showWizard) console.clear()
+  if (!options.has('verbose')) {
+    if (wizardRequested) console.clear()
     console.log(`✅ Wrote: .solidfun`)
   }
 }
@@ -258,13 +276,13 @@ async function write({ env, config, writes, layouts, noLayoutRoutes, baseUrl, di
 
 async function fsWrite({ dir, content, fileName, options }: { dir: string, content: string, fileName: string, options: Options }) {
   await writeFile(resolve(join(dir, fileName)), content, 'utf8')
-  if (options.has('--verbose')) console.log('✅ Wrote: ' + join(dir, fileName))
+  if (options.has('verbose')) console.log('✅ Wrote: ' + join(dir, fileName))
 }
 
 
 async function fsCopy({ dirRead, dirWrite, srcFileName, aimFileName, options }: { dirRead: string, dirWrite: string, srcFileName: string, aimFileName: string, options: Options }){
   await copyFile(join(dirRead, '../../' + srcFileName), join(dirWrite, aimFileName))
-  if (options.has('--verbose')) console.log('✅ Wrote: ' + join(dirWrite, aimFileName))
+  if (options.has('verbose')) console.log('✅ Wrote: ' + join(dirWrite, aimFileName))
 }
 
 
@@ -365,7 +383,7 @@ export const url: ${config.envs.map(env => `'${env.url}'`).join(' | ')} = '${bas
 
 const getImportEntry = (name: string, fsPath: string, star: boolean) => `import ${star ? '* as ' : ''}${name} from '${fsPath.replace(/\.tsx?$/, '')}'\n`
 
-const getConstEntry = (urlPath: string, moduleName: string, apiModuleName?: keyof typeof API_TYPE) => `  '${urlPath}': ${moduleName}${apiModuleName ? '.' + apiModuleName : ''},\n`
+const getConstEntry = (urlPath: string, moduleName: string, apiModuleName?: keyof typeof supportedApiMethods) => `  '${urlPath}': ${moduleName}${apiModuleName ? '.' + apiModuleName : ''},\n`
 
 const getPipeEntry = (path: string) => `'${path}' | `
 
@@ -432,10 +450,62 @@ function removeComments(code: string): string {
 }
 
 
-const API_TYPE = {
-  GET: 'GET',
-  POST: 'POST',
-} as const
+const supportedApiMethods = { GET: 'GET', POST: 'POST' } as const
+
+
+class Question {
+  /** Name of module, examples: `(route, mongoose, valibot)` */
+  mod: string
+  /** The `question` */
+  text: string
+  /** Should this `mod` be built? `yes` or `no` */
+  answer: Answer
+
+  constructor(mod: string, text: string) {
+    this.mod = mod
+    this.text = text
+    this.answer = 'no'
+  }
+}
+
+
+class Options {
+  current: Set<string>
+
+  constructor() {
+    this.current = new Set(process.argv.filter(arg => arg.startsWith('--')))
+  }
+
+  /** @param option Does the current command have this "option" */
+  has(option: keyof typeof availableOptions) {
+    return this.current.has('--' + option)
+  }
+}
+
+
+/** The modules that won't be built */
+class ModuleBlackList {
+  mods: Set<string>
+
+  constructor() {
+    this.mods = new Set()
+  }
+
+  populate(questions: Questions) {
+    for (const q of questions.array) {
+      if (q.answer === 'no') this.mods.add(q.mod)
+    }
+  }
+}
+
+
+const availableOptions = {
+  all: 'all',
+  solid: 'solid',
+  verbose: 'verbose',
+  valibot: 'valibot',
+  mongoose: 'mongoose',
+}
 
 
 type Route = {
@@ -463,17 +533,6 @@ type APICounts = {
   POST: 0
 }
 
-
-
-type Question = {
-  mod: string
-  text: string
-  answer: Answer
-}
 type Answer = 'yes' | 'no'
 
 type CWD = string
-
-type Options = Set<string>
-
-type ModBlackList = Set<string>
