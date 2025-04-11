@@ -32,12 +32,16 @@ export class FE {
 
 
   async GET <T extends GET_Paths>(path: T, options?: { params?: GET_Params<T> }) {
-    return await feFetch(buildURL(path, options?.params))
+    const res = await feFetch(buildURL(path, options?.params))
+    this.catch(res)
+    return res
   }
 
 
   async POST <T extends POST_Paths>(path: T, options?: { params?: POST_Params<T>, body?: POST_Body<T> }) {
-    return await feFetch(buildURL(path, options?.params), 'POST', options?.body)
+    const res = await feFetch(buildURL(path, options?.params), 'POST', options?.body)
+    this.catch(res)
+    return res
   }
 
 
