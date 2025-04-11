@@ -10,6 +10,8 @@
     - `npm version major`
         - Update includes new features added in a not backward-compatible way
     - `MAJOR.MINOR.PATCH`
+    - Potential prerequisites:
+        - `npm login`
 1. 🚀 Push to GitHub
 1. 📦 Push  to NPM
     - Bash: `npm run publish`

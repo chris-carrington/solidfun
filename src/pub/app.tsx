@@ -1,3 +1,9 @@
+/**
+ * 🧚‍♀️ How to access:
+ *     - import { routes, App } from '@solidfun/app'
+ */
+
+
 import { Suspense } from 'solid-js'
 import { Route as FunRoute } from './route'
 import { MetaProvider } from '@solidjs/meta'

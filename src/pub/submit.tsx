@@ -1,3 +1,9 @@
+/**
+ * 🧚‍♀️ How to access:
+ *     - import { Submit } from '@solidfun/submit'
+ */
+
+
 import { FE } from './fe'
 
 

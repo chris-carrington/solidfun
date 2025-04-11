@@ -40,7 +40,7 @@ export async function setSessionData(sessionData: SessionData): Promise<void> {
       return sessionData
     }
 ```
- * - Next anwhere => `import { parseSessionData } from '@src/lib/parseSessionData'`
+ * - Next anywhere => `import { parseSessionData } from '@src/lib/parseSessionData'`
  * - The `SessionData` type is configured via JSDOC @ `./fun.config.js`
  */
 export async function getSessionData(): Promise<null | SessionData> {

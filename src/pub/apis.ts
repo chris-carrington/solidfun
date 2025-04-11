@@ -1,4 +1,4 @@
-import { API } from './pub/api'
+import { API } from './api'
 
 
 export const gets = {

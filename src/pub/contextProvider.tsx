@@ -1,3 +1,9 @@
+/**
+ * 🧚‍♀️ How to access:
+ *     - import { ContextProvider } from '@solidfun/contextProvider'
+ */
+
+
 import { createStore } from 'solid-js/store'
 import type { JSX, Context } from 'solid-js'
 
