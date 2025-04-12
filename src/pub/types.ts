@@ -144,6 +144,21 @@ export type GET_fn_Response<T_GET_Path extends GET_Paths> =
     : never;
 
 
+/**
+ * Enforce the exact shape of keys from InferOutput<T>.
+ * Allow more flexible values (e.g., string | null instead of just string).
+ * Disallow extra keys not in the inferred shape.
+ */
+type AllowAnyValue<T> = { [K in keyof T]: unknown }
+type ExactKeys<T, U> = Exclude<keyof U, keyof T> extends never
+  ? Exclude<keyof T, keyof U> extends never
+    ? U
+    : never
+  : never;
+
+export type AnyValue<T> = ExactKeys<T, AllowAnyValue<T>>
+
+
 /** gen */
 export type Routes = '/a' | '/b'
 export type GET_Paths = '/api/get/a' | '/api/get/b'

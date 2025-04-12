@@ -9,17 +9,7 @@
 ## 🧐 Intellisense everywhere?
 - Yes!
 - How?
-    - Option 1️⃣: Global Install, `bash` example:
-        1. `npm install -g solidfun`
-        1. `fun build local`
-    - Option 2️⃣: Local Install, `bash` example:
-        1. `npm install solidfun`
-        1. `npx fun build local`
-    - And then w/ either option, `package.json` example:
-        - Example: `"dev": "fun build local && vinxi dev"`
-        - So no `npx` required @ `package.json` ✅
-- Explain:
-    - `fun build` is a blazingly fast command that creates types based on the current state of your application
+    - `fun build` is a blazingly fast `bash` command that creates types based on the current state of your application
     - These types provide `intellisense` (compile time guidance) at all of the following locations:
       - Config
           - `const config = {}`
@@ -63,14 +53,17 @@
     import { Route } from '@solidfun/route' // create a route
     import { Layout } from '@solidfun/layout' // create a route layout
     import { Messages } from '@solidfun/messages'
+    import { feContext } from '@solidfun/feContext'
     import { clientOnly } from '@solidfun/clientOnly'
+    import { mongoConnect } from '@solidfun/mongoConnect' // simple mongo db pool management
     import { getMiddleware } from '@solidfun/getMiddleware' // call async fn's before route and/or api fn's
-    import { DateTimeFormat } from '@solidfun/dateTimeFormat' // simple Intl.DateTimeFormat() component
+    import { createOnSubmit } from '@solidfun/createOnSubmit' // lovely form api calls
+    import { DateTimeFormat } from '@solidfun/dateTimeFormat'
     import { ContextProvider } from '@solidfun/contextProvider'
-    import { MongoModel, InferMongoModel } from '@solidfun/mongoose' // more mongo db intellisense
+    import { MongoModel, InferMongoModel } from '@solidfun/mongoModel' // additional mongo db intellisense
     import { onMiddlewareRequest } from '@solidfun/onMiddlewareRequest'
     import { beFetch, beGET, bePOST, beParse } from '@solidfun/beFetch' // query api's during render, stream dynamic data when ready & use typed data in components ✨
-    import { ValibotSchema, InferValibotSchema } from '@solidfun/valibot' // validate & parse data
+    import { ValibotSchema, InferValibotSchema } from '@solidfun/valibotSchema' // validate & parse data
     import { createRouteURL, createApiGetUrl, creatApiPostUrl } from '@solidfun/url'
     import { setSessionData, getSessionData, clearSessionData } from '@solidfun/session' // auth
     ```

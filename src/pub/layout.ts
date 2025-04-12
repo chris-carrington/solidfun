@@ -5,19 +5,19 @@
 
 
 import type { JSX } from 'solid-js'
-import type { RouteSectionProps } from '@solidjs/router'
+import type { RouteComponentArgs } from './app'
 
 
 export class Layout {
   /** If no path specified => this layout groups pages w/o url alteration */
   path?: string
-  name?: string
-  component: (props: RouteSectionProps) => JSX.Element
+  moduleName?: string
+  component: (props: RouteComponentArgs) => JSX.Element
 
 
   constructor(options: Options) {
     this.path = options.path
-    this.name = options.name
+    this.moduleName = options.moduleName
     this.component = options.component
   }
 }
@@ -26,6 +26,6 @@ export class Layout {
 type Options = {
   /** If no path specified => this layout groups pages w/o url alteration */
   path?: string
-  name?: string
-  component: (props: RouteSectionProps) => JSX.Element,
+  moduleName?: string
+  component: (props: RouteComponentArgs) => JSX.Element,
 }

@@ -5,6 +5,7 @@
  */
 
 
+import type { AnyValue } from './types'
 import { flatten, safeParse, type BaseSchema, type InferOutput } from 'valibot'
 
 
@@ -24,7 +25,7 @@ export class ValibotSchema<T extends BaseSchema<any, any, any>> {
    * @param schema - Schema the input should look like
    * @returns - Parsed output or throws an error if any issues
    */
-  parse(input: InferOutput<T>): InferOutput<T> {
+  parse(input: AnyValue<InferOutput<T>>): InferOutput<T> {
     const result = safeParse(this.schema, input)
 
     if (result.issues) throw flatten(result.issues)

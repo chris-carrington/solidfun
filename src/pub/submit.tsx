@@ -7,7 +7,7 @@
 import { FE } from './fe'
 
 
-export const Submit = ({ fe, label }: { fe: FE, label: string }) => {
-  const [isLoading] = fe.getLoading()
+export const Submit = ({ fe, label, loadKey }: { fe: FE, label: string, loadKey: string }) => {
+  const [isLoading] = fe.getLoading(loadKey)
   return <button class="btn" type="submit" disabled={ isLoading() }>{ isLoading() ? <span class="load"></span> : label }</button>
 }

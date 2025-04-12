@@ -8,6 +8,7 @@
 import type { B4 } from './types'
 import type { JSX } from 'solid-js'
 import type { Layout } from './layout'
+import type { RouteComponentArgs } from './app'
 import { pathnameToPattern } from './pathnameToPattern'
 
 
@@ -44,8 +45,11 @@ export class Route<T extends RouteArgs = {}> {
   /** Turns url parameters (:param and :param?) into regex patterns to match path's */
   pattern: RegExp
 
-  /** If async is necessary use createAsync() */
-  component?: () => JSX.Element
+  /** 
+   * - If fetching data is necessary see: `beFetch()`
+   * - If form submission is necessary see: `createOnSubmit()`
+   */
+  component?: (args: RouteComponentArgs) => JSX.Element
 
   /** Helpful for gen file */
   name?: string
@@ -90,8 +94,11 @@ export type RouteOptions = {
   /** Turns url parameters (:param and :param?) into regex patterns to match path's */
   pattern?: RegExp
 
-  /** If async is necessary use createAsync() */
-  component?: () => JSX.Element
+  /** 
+   * - If fetching data is necessary see: `beFetch()`
+   * - If form submission is necessary see: `createOnSubmit()`
+   */
+  component?: (args: RouteComponentArgs) => JSX.Element
 
   /**
    * - https://docs.solidjs.com/solid-router/concepts/path-parameters

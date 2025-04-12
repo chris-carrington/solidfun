@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { cliErrors } from './cliErrors.js'
 import type { FunConfig } from '../index.js'
 import { join, resolve, dirname } from 'node:path'
-import { publicMods, privateMods } from '../mods.js'
+import { fundamentals, fundamentalHelpers } from '../fundamentals.js'
 import { mkdir, readdir, writeFile, readFile, copyFile } from 'node:fs/promises'
 
 
@@ -261,8 +261,8 @@ async function write({ env, config, writes, layouts, noLayoutRoutes, baseUrl, di
     fsWrite({ dir: dirWritePub, content: getEnvContent(env, config, baseUrl), fileName: 'env.ts', options }),
     fsWrite({ dir: dirWritePub, content: getTypesContent(writes, pubTypesContent), fileName: 'types.d.ts', options }),
     fsWrite({ dir: dirWritePub, content: getAppContent(layouts, noLayoutRoutes, space), fileName: 'app.tsx', options }),
-    privateMods.map(([filename, ext]) => fsCopy({ dirRead, dirWrite: dirWriteRoot, srcFileName: filename +'.txt', aimFileName: filename +'.'+ ext, options })),
-    publicMods
+    fundamentalHelpers.map(([filename, ext]) => fsCopy({ dirRead, dirWrite: dirWriteRoot, srcFileName: filename +'.txt', aimFileName: filename +'.'+ ext, options })),
+    fundamentals
       .filter(mod => !blackList.mods.has(mod[0] as string))
       .map(([filename, ext]) => fsCopy({ dirRead, dirWrite: dirWritePub, srcFileName: filename +'.txt', aimFileName: filename +'.'+ ext, options })),
   ])
@@ -323,6 +323,12 @@ ${writes.constPOST.slice(0,-1)}
 `
 }
 
+
+function getComponentContent(moduleName?: string) {
+  return `props => rc(props, ${moduleName})`
+}
+
+
 function getAppContent(layouts: Layouts, noLayoutRoutes: Route[], space: string) {
   let app = ''
   let imports = ''
@@ -331,18 +337,18 @@ function getAppContent(layouts: Layouts, noLayoutRoutes: Route[], space: string)
   noLayoutRoutes.forEach(route => {
     imports += getImportEntry(route.moduleName as string, route.fsPath, false)
     constRoute += getConstEntry(route.urlPath, route.moduleName as string)
-    app += `    <Route path={${route.moduleName}.path} component={${route.moduleName}.component} matchFilters={${route.moduleName}.filters} />\n`
+    app += `    <Route path={${route.moduleName}.path} component={${getComponentContent(route.moduleName)}} matchFilters={${route.moduleName}.filters} />\n`
   })
 
   layouts.forEach((layout, fsPath) => {
     imports += getImportEntry(layout.name, fsPath, false)
 
-    app +=`    <Route component={${layout.name}.component}>\n`
+    app +=`    <Route component={${getComponentContent(layout.name)}}>\n`
 
     layout.routes.forEach(route => {
       imports += getImportEntry(route.moduleName as string, route.fsPath, false)
       constRoute += getConstEntry(route.urlPath, route.moduleName as string)
-      app += `      <Route path={${route.moduleName}.path} component={${route.moduleName}.component} matchFilters={${route.moduleName}.filters} />\n`
+      app += `      <Route path={${route.moduleName}.path} component={${getComponentContent(route.moduleName)}} matchFilters={${route.moduleName}.filters} />\n`
     })
 
     app += `    </Route>\n`
@@ -354,10 +360,14 @@ function getAppContent(layouts: Layouts, noLayoutRoutes: Route[], space: string)
  */
 
 
-import { Suspense } from 'solid-js'
+import { FE } from './fe'
+import { Layout } from './layout'
+import { Route as FunRoute } from './route'
 import { MetaProvider } from '@solidjs/meta'
-import { Route, Router } from '@solidjs/router'
+import { useContext, Suspense } from 'solid-js'
 import { FileRoutes } from '@solidjs/start/router'
+import { FE_Context, FE_ContextProvider } from './feContext'
+import { Route, Router, type RouteSectionProps } from '@solidjs/router'
 
 
 ${imports}\n
@@ -366,11 +376,41 @@ ${constRoute.slice(0,-2)}
 }
 ${space}
 export const App = () => <>
-  <Router root={ (props) => <> <MetaProvider> <Suspense>{props.children}</Suspense> </MetaProvider> </> }>
+  <Router root={Root}>
     <FileRoutes />
 ${app.slice(0,-1)}
   </Router>
 </>
+
+
+function Root (props: RouteSectionProps) {
+  return <>
+    <FE_ContextProvider>
+      <MetaProvider>
+        <Suspense>{props.children}</Suspense>
+      </MetaProvider>
+    </FE_ContextProvider>
+  </> 
+}
+
+
+/**
+ * RC stands for Route Component
+ * This gives each route render a fresh FE object
+ * @param props 
+ * @param component 
+ * @returns 
+ */
+function rc(props: RouteSectionProps, route: FunRoute | Layout) {
+  const fe = useContext(FE_Context)
+  const args: RouteComponentArgs = { fe, ...props }
+
+  if (route instanceof FunRoute) fe.messages.clearAll() // on route boot fresh messages
+
+  return route.component ? route.component(args) : undefined
+}
+
+export type RouteComponentArgs = RouteSectionProps & { fe: FE }
 `
 }
 

@@ -4,11 +4,14 @@
  */
 
 
-import { Suspense } from 'solid-js'
+
+import { FE } from './fe'
 import { Route as FunRoute } from './route'
 import { MetaProvider } from '@solidjs/meta'
-import { Route, Router } from '@solidjs/router'
+import { useContext, Suspense } from 'solid-js'
 import { FileRoutes } from '@solidjs/start/router'
+import { FE_Context, FE_ContextProvider } from './feContext'
+import { Route, Router, type RouteSectionProps } from '@solidjs/router'
 
 
 export const routes = {
@@ -18,9 +21,29 @@ export const routes = {
 
 
 export const App = () => <>
-  <Router root={ (props) => <> <MetaProvider> <Suspense>{props.children}</Suspense> </MetaProvider> </> }>
+  <Router root={Root}>
     <FileRoutes />
-    <Route path={routes['/a'].path} component={routes['/a'].component} />
-    <Route path={routes['/b'].path} component={routes['/b'].component} />
+    <Route path={routes['/a'].path} component={props => rc(props, routes['/a'])} />
+    <Route path={routes['/b'].path} component={props => rc(props, routes['/b'])} />
   </Router>
 </>
+
+
+function rc(props: RouteSectionProps, route: FunRoute) {
+  const fe = useContext(FE_Context)
+  const args: RouteComponentArgs = { fe, ...props }
+
+  return route.component ? route.component(args) : undefined
+}
+
+export type RouteComponentArgs = RouteSectionProps & { fe: FE }
+
+function Root (props: RouteSectionProps) {
+  return <>
+    <FE_ContextProvider>
+      <MetaProvider>
+        <Suspense>{props.children}</Suspense>
+      </MetaProvider>
+    </FE_ContextProvider>
+  </> 
+}
