@@ -50,6 +50,11 @@ export class FE {
   }
 
   
+  /**
+   * Set signal value for a loadKey
+   * @param loadKey - Loading spinners on a page each have a signal to determine if they are visible or not and a key to identify them
+   * @param value - Set the value to this
+   */
   setLoading(loadKey: string, value: boolean) {
     if (this.loadSignals[loadKey]) this.loadSignals[loadKey][1](value)
     else this.loadSignals[loadKey] = createSignal(value)
@@ -57,8 +62,13 @@ export class FE {
 
 
 
-  getLoading(loadKey: string) {
+  /**
+   * - Get the current loading value by loadKey
+   * - If there is not a signal already for this load key, a signal will be created for this load key and it will default to false
+   * @param loadKey - Loading spinners on a page each have a signal to determine if they are visible or not and a key to identify them
+   */
+  isLoading(loadKey: string): boolean {
     if (!this.loadSignals[loadKey]) this.loadSignals[loadKey] = createSignal(false)
-    return this.loadSignals[loadKey] // return the accessor value
+    return this.loadSignals[loadKey][0]()
   }
 }
