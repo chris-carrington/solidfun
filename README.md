@@ -83,7 +83,7 @@
 nvm use 22
 npm create solid # typescript is required
 npm i @types/node -D
-npm install -g solidfun
+npm install -g solidfun # -g allows, in bash, "fun build" w/o requiring "npx", -g is not required
 ```
 
 
@@ -131,8 +131,8 @@ export default defineConfig({
 ### Create a `.env` file:
 - This password is used to encrypt/decrypt cookie values
 - It must be at least 32 characters long b/c of how web crypto works, example:
-```
-SESSION_CRYPT_PASSWORD=a94fc8e3b1024d2cc99ee0e874a4bc79
+```toml
+SESSION_CRYPT_PASSWORD=a94fc8e3b1024d2cc99ee0e874a4bc79 # please set new password here
 ```
 
 
@@ -185,7 +185,8 @@ export const config = {
 
 ### 😅 Test a build
 ```bash
-fun build local
+fun build local # if you did: npm i -g solidfun
+npx fun build local # if you did: npm i solidfun
 ```
 
 

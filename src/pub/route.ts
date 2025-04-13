@@ -51,9 +51,6 @@ export class Route<T extends RouteArgs = {}> {
    */
   component?: (args: RouteComponentArgs) => JSX.Element
 
-  /** Helpful for gen file */
-  name?: string
-
   /**
    * - https://docs.solidjs.com/solid-router/concepts/path-parameters
    * - If filter match is falsy => application renders `./src/routes/[...404].tsx`
