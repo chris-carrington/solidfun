@@ -54,10 +54,12 @@ export async function bePOST<T extends POST_Paths>(path: T, options?: { params?:
  * - Else If there was an error w/ the request => `_beAPI()` will `console.error()` the error and return null or error based on `options.returnError`, defaults to return null
  * - Else => Respond w/ parsed data
  */
-export async function _beAPI({ url, cookieKey, method = 'GET', body, returnError }: { url: string, cookieKey: string, method: 'GET' | 'POST', body?: any, returnError?: boolean }) {
+export async function _beAPI({ url, cookieKey, method = 'GET', body, returnError }: { url: string, cookieKey?: string, method: 'GET' | 'POST', body?: any, returnError?: boolean }) {
   'use server'
 
   try {
+    if (!cookieKey) throw new Error('Please set fun.config "cookieKey" so that _beAPI will work')
+
     let requestInit = {}
     const cookieValue = getCookie(cookieKey)
     const Cookie = cookieKey + "=" + cookieValue

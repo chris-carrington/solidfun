@@ -1,5 +1,5 @@
-import { DEFAULT_MESSAGE_NAME } from './pub/vars'
-import type { BE_Messages_Response } from './pub/types'
+import { DEFAULT_MESSAGE_NAME } from './fundamentals/vars'
+import type { BE_Messages_Response } from './fundamentals/types'
 
 
 /**

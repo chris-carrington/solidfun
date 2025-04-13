@@ -1,5 +1,5 @@
-import type { BE_Response } from './pub/types'
-import { DEFAULT_MESSAGE_NAME } from './pub/vars'
+import type { BE_Response } from './fundamentals/types'
+import { DEFAULT_MESSAGE_NAME } from './fundamentals/vars'
 import type { AccessorWithLatest } from '@solidjs/router'
 import { createEffect, createSignal, type Signal } from 'solid-js'
 

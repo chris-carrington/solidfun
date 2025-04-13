@@ -20,9 +20,14 @@
  *         - So this type is available before types.ts aka @solidfun/types is created
 */
 export type FunConfig = {
-  apiDir: string,
-  appDir: string,
-  cookieKey: string,
-  sessionDataTTL: number,
-  envs: { name: string, url: string }[],
+  apiDir?: string,
+  appDir?: string,
+  cookieKey?: string,
+  sessionDataTTL?: number,
+  plugins: {
+    solid?: boolean,
+    valibot?: boolean,
+    mongoose?: boolean,
+  },
+  envs?: { name: string, url: string }[],
 }

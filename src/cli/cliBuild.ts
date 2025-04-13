@@ -1,425 +1,396 @@
 import { fileURLToPath } from 'node:url'
 import { cliErrors } from './cliErrors.js'
 import type { FunConfig } from '../index.js'
+import { fundamentals } from '../fundamentals.js'
 import { join, resolve, dirname } from 'node:path'
-import { fundamentals, fundamentalHelpers } from '../fundamentals.js'
 import { mkdir, readdir, writeFile, readFile, copyFile } from 'node:fs/promises'
 
 
 
-class Questions {
-  array: Question[] = []
+/**
+ * - Build types, components and functions for a `Solid Fun` environment!
+ * - Configure w/ "fun.config.js" @ your cwd
+ * - Options:
+ *     - `--verbose`: Log what's happening + extra logs during wizard
+ */
+export async function cliBuild(cwd: string) {
+  const athena = await Athena.Create(cwd)
 
-  map = {
-    valibot: new Question('valibot', '🚨 Include Valibot Fundamentals?'),
-    mongoose: new Question('mongoose', '📀 Include Mongoose Fundamentals?'),
+  if (athena.config.plugins.solid) {
+    await Promise.all([
+      mkdir(athena.dirWriteFundamentals, { recursive: true }),
+      athena.doInitialSolidReads()
+    ])
   }
 
-  constructor() {
-    this.array = [ // here we specify the question order
-      this.map.mongoose,
-      this.map.valibot
-    ]
-  }
+  await Promise.all(athena.getWritePromises())
+
+  if (!athena.options.has('verbose')) console.log(`✅ Wrote: .solidfun`)
 }
 
 
 
 /**
- * - Build types, components and functions for an `Solid Fun` environment!
- * - Options:
- *     - `--verbose`: Log what's happening + extra logs during wizard
- *     - `--all`: No wizard + include mongoose and valibot fundamentals
- *     - `--solid`: No wizard + do not include mongoose or valibot fundamentals
- *     - `--mongoose`: No wizard + include mongoose fundamentals
- *     - `--valibot`: No wizard + include valibot fundamentals
- * - Examples:
- *     - `fun build local`
- *     - `fun build prod --all`
- *     - `fun build local --solid --verbose`
+ * - From a tree shakability perspective, functions > classes, but all in this file needs all else and there are a lot of variables & functions so a class is perfect b/c w/o it there'd be a lot of variable argument passing
+ * - Think of Athena like Jarvis or Alfred, hold all my stuff and do some stuff w/ it please
  */
-export async function cliBuild(cwd: CWD) {  
-  const { options, questions, blackList, wizardRequested } = initVariables()
+class Athena {
+  cwd: string
+  env: string
+  space = '\n'
+  baseUrl: string
+  fsApp?: string
+  config: FunConfig
+  dirRead: string
+  fsSolidTypes?: string
+  dirWriteRoot: string
+  dirWriteFundamentals: string
+  layouts: Layouts = new Map()
+  options: Options = new Options()
+  noLayoutRoutes: Route[] = [] 
+  whiteList: FundamentalWhiteList = new FundamentalWhiteList()
+  apiCounts: { GET: number, POST: number } = { GET: 0, POST: 0 }
+  writes: Writes = { types: '', imports: '', pipeGET: '', pipePOST: '', constGET: '', constPOST: '', pipeRoutes: '' }
 
-  if (wizardRequested) await showWizard(questions)
 
-  blackList.populate(questions)
-  await readWrite(cwd, options, questions, blackList, wizardRequested)
-}
+  private constructor(cwd: string, env: string, baseUrl: string, config: FunConfig, configPath: string) {
+    this.cwd = cwd
+    this.env = env
+    this.baseUrl = baseUrl
+    this.config = this.whiteList.populate(config)
 
+    this.dirWriteRoot = join(cwd, '.solidfun')
+    this.dirWriteFundamentals = join(cwd, '.solidfun/fundamentals')
+    this.dirRead = dirname(fileURLToPath(import.meta.url))
 
-async function showWizard(questions: Questions) {
-  process.stdin.setRawMode(true)
-  process.stdin.resume()
-  process.stdin.setEncoding('utf8')
-
-  for (const q of questions.array) {
-    q.answer = await askQuestion(q)
+    if (this.options.has('verbose')) console.log(`✅ Read: ${configPath}`)
   }
 
-  process.stdin.setRawMode(false) 
-  process.stdin.pause()
-}
 
-
-function initVariables() {
-  const options = new Options()
-  const questions = new Questions()
-  const blackList = new ModuleBlackList()
-
-  /** start w/ 'true' and then if they as for anything specific flip to 'false' */
-  let wizardRequested = true
-
-  if (options.has('solid')) wizardRequested = false // solid is the default so nothing else changes but a wizard bypass
-
-  if (options.has('mongoose')) {
-    wizardRequested = false
-    questions.map.mongoose.answer = 'yes'
+  /**
+   * - Get the environment specified in the command
+   * - Get the config
+   * - Get the env baseUrl
+   * - Populate the white list
+   * - Populate lots of helpful variables
+   * @param cwd - Common working directory
+   * @returns athena object that has lost of helpful variables and functions to do w/ those variables
+   */
+  static async Create(cwd: string) {
+    const env = Athena.#getEnv()
+    const {config, configPath} = await Athena.#getConfig(cwd)
+    const baseUrl = Athena.#getBaseUrl(env, config)
+    return new Athena(cwd, env, baseUrl, config, configPath)
   }
 
-  if (options.has('valibot')) {
-    wizardRequested = false
-    questions.map.valibot.answer = 'yes'
+
+  static #getEnv() {
+    const env = process.argv[3]
+    if (!env) throw new Error(cliErrors.wrongEnv())
+    return env
   }
 
-  if (options.has('all')) { // yes to all
-    wizardRequested = false    
-    questions.array.forEach(q => q.answer = 'yes')
+
+  /** The config defined at ./fun.config */
+  static async #getConfig(cwd: string) {
+    const configPath = resolve(cwd, 'fun.config.js')
+    const module = await import(configPath)
+    const config = module?.config ? module.config : null
+  
+    if (!config) throw new Error(cliErrors.noConfig)
+  
+    return { config, configPath }
   }
 
-  return {
-    options,
-    blackList,
-    questions,
-    wizardRequested,
-  }
-}
 
+  static #getBaseUrl(env: string, config: FunConfig) {
+    let baseUrl
 
-function askQuestion(question: Question): Promise<Answer> {
-  return new Promise((resolve) => {
-    let currentSelection: Answer = 'yes'
-
-    const reset = '\x1b[0m'
-    const white = '\x1b[97m'
-    const gray = '\x1b[90m'
-
-    const printUI = () => {
-      console.clear()
-      console.log(question.text)
-
-      if (currentSelection === 'yes') console.log(`${white}[Yes please]${reset} / ${gray}No${reset}`)
-      else console.log(`${gray}Yes${reset} / ${white}[No thanks]${reset}`)
-    }
-
-
-    function onKeyPress(key: string) {
-      if (key === '\u0003') process.exit() // ctrl+c   
-      else if (key === '\u001B') process.exit() // escape
-      else if (key === '\u001B[D') { // left arrow 
-        currentSelection = 'yes'
-        printUI()
-      } else if (key === '\u001B[C') { // right arrow
-        currentSelection = 'no'
-        printUI() 
-      } else if (key === '\r') { // enter
-        process.stdin.removeListener('data', onKeyPress)
-        resolve(currentSelection)
+    if (config?.envs) {
+      for (let configEnv of config.envs) {
+        if (env === configEnv.name) {
+          baseUrl = configEnv.url
+          break
+        }
       }
     }
+  
+    if (!baseUrl) throw new Error(cliErrors.wrongEnv(env))
 
-    process.stdin.on('data', onKeyPress)
-
-    printUI()
-  })
-}
-
-
-async function readWrite(cwd: string,  options: Options, questions: Questions, blackList: ModuleBlackList, wizardRequested: boolean) {
-  const layouts: Layouts = new Map()
-  const noLayoutRoutes: Route[] = [] 
-  let apiCounts: APICounts = { GET: 0, POST: 0 }
-  const writes: Writes = { types: '', imports: '', pipeGET: '', pipePOST: '', constGET: '', constPOST: '', pipeRoutes: '' }
-
-  const env = getEnv()
-  const config = await getConfig(cwd, options)
-  const baseUrl = getBaseUrl(env, config)
-  const dirWriteRoot = join(cwd, '.solidfun')
-  const dirWritePub = join(cwd, '.solidfun/pub')
-  const dirRead = dirname(fileURLToPath(import.meta.url))
-
-  const [pubTypesContent] = await Promise.all([
-    readFile(join(dirRead, '../../types.d.txt'), 'utf-8'),
-    apiInfo(writes, apiCounts, resolve(cwd, config.apiDir)),
-    appInfo(writes, layouts, noLayoutRoutes, resolve(cwd, config.appDir)),
-  ])
-
-  await write({ env, config, writes, layouts, noLayoutRoutes, baseUrl, dirRead, dirWriteRoot, dirWritePub, pubTypesContent, questions, options, wizardRequested, blackList })
-}
+    return baseUrl
+  }
 
 
+  async doInitialSolidReads() {  
+    if (this.config.plugins.solid) {
+      if (!this.config.apiDir || typeof this.config.apiDir !== 'string') throw new Error('❌ When using the solid plugin, `config.apiDir` must be a truthy string')
+      if (!this.config.appDir || typeof this.config.appDir !== 'string') throw new Error('❌ When using the solid plugin, `config.appDir` must be a truthy string')
+  
+      const [app, types] = await Promise.all([
+        readFile(join(this.dirRead, '../../app.txt'), 'utf-8'),
+        readFile(join(this.dirRead, '../../types.d.txt'), 'utf-8'),
+        this.#bindApiData(resolve(this.cwd, this.config.apiDir)),
+        this.#bindAppData(resolve(this.cwd, this.config.appDir)),
+      ])
 
-/** The config defined at ./fun.config */
-async function getConfig(cwd: CWD, options: Options): Promise<FunConfig> {
-  const name = 'fun.config.js'
-  const configPath = resolve(cwd, name)
-  const module = await import(configPath)
-  const config = module?.config ? module.config : null
-
-  if (!config) throw new Error(cliErrors.noConfig)
-  if (options.has('verbose')) console.log(`✅ Read: ${configPath}`)
-
-  return config
-}
-
-
-
-/** Define the fsPath, and urlPath for each api w/in the provided directory */
-async function apiInfo(writes: Writes, apiCounts: APICounts, dir: string): Promise<void> {
-  const entries = await readdir(dir, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const fsPath = join(dir, entry.name);
-
-    if (entry.isDirectory()) await apiInfo(writes, apiCounts, fsPath)
-    else if (entry.isFile() && fsPath.endsWith('.ts')) {
-      const content = await readFile(fsPath, 'utf-8')
-      const cleanedContent = removeComments(content)
-
-      const getPath = getApiPathFor('GET', cleanedContent)
-      const postPath = getApiPathFor('POST', cleanedContent)
-
-      if (getPath) {
-        apiCounts.GET++
-        writes.pipeGET += getPipeEntry(getPath)
-        writes.imports += getImportEntry('GET' + apiCounts.GET, fsPath, true)
-        writes.constGET += getConstEntry(getPath, 'GET' + apiCounts.GET, 'GET')
-      }
-
-      if (postPath) {
-        apiCounts.POST++
-        writes.pipePOST += getPipeEntry(postPath)
-        writes.imports += getImportEntry('POST' + apiCounts.POST, fsPath, true)
-        writes.constPOST += getConstEntry(postPath, 'POST' + apiCounts.POST, 'POST')
-      }
+      this.fsApp = app
+      this.fsSolidTypes = types
     }
   }
-}
 
 
-/** Define the fsPath, fsLayoutPath, and urlPath for each route w/in the provided directory */
-async function appInfo(writes: Writes, layouts: Layouts, noLayoutRoutes: Route[], dir: string): Promise<void> {
-  const entries = await readdir(dir, { withFileTypes: true })
+  /** Define the fsPath, and urlPath for each api w/in the provided directory */
+  async #bindApiData(dir: string): Promise<void> {
+    const entries = await readdir(dir, { withFileTypes: true });
 
-  for (const entry of entries) {
-    const fsPath = join(dir, entry.name)
+    for (const entry of entries) {
+      const fsPath = join(dir, entry.name);
 
-    if (entry.isDirectory()) await appInfo(writes, layouts, noLayoutRoutes, fsPath)
-    else if (entry.isFile() && fsPath.endsWith('.tsx')) {
-      const content = await readFile(fsPath, 'utf-8')
-      const cleanedContent = removeComments(content)
-      const match = /export\s+default[\s\S]*?path\s*:\s*(['"`])([^'"`]+)\1/.exec(cleanedContent)
+      if (entry.isDirectory()) await this.#bindApiData(fsPath)
+      else if (entry.isFile() && fsPath.endsWith('.ts')) {
+        const content = await readFile(fsPath, 'utf-8')
+        const cleanedContent = removeComments(content)
 
-      if (match) { // match[2] is the path for the route
-        const urlPath = (match[2] || '').trim()
-        const route: Route = { fsPath, urlPath }
-        const nameOfLayout = getLayout(cleanedContent)
+        const getPath = getApiPathFor('GET', cleanedContent)
+        const postPath = getApiPathFor('POST', cleanedContent)
 
-        writes.pipeRoutes += getPipeEntry(route.urlPath)
+        if (getPath) {
+          this.apiCounts.GET++
+          this.writes.pipeGET += getPipeEntry(getPath)
+          this.writes.imports += getImportEntry('GET' + this.apiCounts.GET, fsPath, true)
+          this.writes.constGET += getConstEntry(getPath, 'GET' + this.apiCounts.GET, 'GET')
+        }
 
-        if (nameOfLayout) {
-          const layoutImportPath = getLayoutFrom(cleanedContent, nameOfLayout)
-
-          if (layoutImportPath) {
-            route.fsLayoutPath = resolve(dirname(fsPath), layoutImportPath)
-
-            const mapRes = layouts.get(route.fsLayoutPath)
-
-            if (!mapRes) layouts.set(route.fsLayoutPath, { name: 'layout' + (layouts.size + 1), routes: [route] })
-            else mapRes.routes.push(route)
-
-            route.moduleName = `route_${layouts.size}_${mapRes ? mapRes.routes.length : 1}`
-          }
-        } else {
-          noLayoutRoutes.push(route)
-          route.moduleName = `route_${noLayoutRoutes.length}`
+        if (postPath) {
+          this.apiCounts.POST++
+          this. writes.pipePOST += getPipeEntry(postPath)
+          this.writes.imports += getImportEntry('POST' + this.apiCounts.POST, fsPath, true)
+          this.writes.constPOST += getConstEntry(postPath, 'POST' + this.apiCounts.POST, 'POST')
         }
       }
     }
   }
-}
 
 
-async function write({ env, config, writes, layouts, noLayoutRoutes, baseUrl, dirRead, dirWriteRoot, dirWritePub, pubTypesContent, options, questions, wizardRequested, blackList }: { env: string, config: FunConfig, writes: Writes, layouts: Layouts, noLayoutRoutes: Route[], baseUrl: string, dirRead: string, dirWriteRoot: string, dirWritePub: string, pubTypesContent: string, options: Options, questions: Questions, wizardRequested: boolean, blackList: ModuleBlackList }) {
-  const space = '\n'
+  /** Define the fsPath, fsLayoutPath, and urlPath for each route w/in the provided directory */
+  async #bindAppData(dir: string): Promise<void> {
+    const entries = await readdir(dir, { withFileTypes: true })
 
-  await mkdir(dirWritePub, { recursive: true })
+    for (const entry of entries) {
+      const fsPath = join(dir, entry.name)
 
-  await Promise.all([
-    fsWrite({ dir: dirWritePub, content: getApiContent(writes, space), fileName: 'apis.ts', options }),
-    fsCopy({ dirRead, dirWrite: dirWriteRoot, srcFileName: 'tsconfig.cliBuild.txt', aimFileName: 'tsconfig.json', options }),
-    fsWrite({ dir: dirWritePub, content: getEnvContent(env, config, baseUrl), fileName: 'env.ts', options }),
-    fsWrite({ dir: dirWritePub, content: getTypesContent(writes, pubTypesContent), fileName: 'types.d.ts', options }),
-    fsWrite({ dir: dirWritePub, content: getAppContent(layouts, noLayoutRoutes, space), fileName: 'app.tsx', options }),
-    fundamentalHelpers.map(([filename, ext]) => fsCopy({ dirRead, dirWrite: dirWriteRoot, srcFileName: filename +'.txt', aimFileName: filename +'.'+ ext, options })),
-    fundamentals
-      .filter(mod => !blackList.mods.has(mod[0] as string))
-      .map(([filename, ext]) => fsCopy({ dirRead, dirWrite: dirWritePub, srcFileName: filename +'.txt', aimFileName: filename +'.'+ ext, options })),
-  ])
+      if (entry.isDirectory()) await this.#bindAppData(fsPath)
+      else if (entry.isFile() && fsPath.endsWith('.tsx')) {
+        const content = await readFile(fsPath, 'utf-8')
+        const cleanedContent = removeComments(content)
+        const match = /export\s+default[\s\S]*?path\s*:\s*(['"`])([^'"`]+)\1/.exec(cleanedContent)
 
-  if (!options.has('verbose')) {
-    if (wizardRequested) console.clear()
-    console.log(`✅ Wrote: .solidfun`)
+        if (match) { // match[2] is the path for the route
+          const urlPath = (match[2] || '').trim()
+          const route: Route = { fsPath, urlPath }
+          const nameOfLayout = getLayout(cleanedContent)
+
+          this.writes.pipeRoutes += getPipeEntry(route.urlPath)
+
+          if (nameOfLayout) {
+            const layoutImportPath = getLayoutFrom(cleanedContent, nameOfLayout)
+
+            if (layoutImportPath) {
+              route.fsLayoutPath = resolve(dirname(fsPath), layoutImportPath)
+
+              const mapRes = this.layouts.get(route.fsLayoutPath)
+
+              if (!mapRes) this.layouts.set(route.fsLayoutPath, { name: 'layout' + (this.layouts.size + 1), routes: [route] })
+              else mapRes.routes.push(route)
+
+              route.moduleName = `route_${this.layouts.size}_${mapRes ? mapRes.routes.length : 1}`
+            }
+          } else {
+            this.noLayoutRoutes.push(route)
+            route.moduleName = `route_${this.noLayoutRoutes.length}`
+          }
+        }
+      }
+    }
   }
-}
 
 
-async function fsWrite({ dir, content, fileName, options }: { dir: string, content: string, fileName: string, options: Options }) {
-  await writeFile(resolve(join(dir, fileName)), content, 'utf8')
-  if (options.has('verbose')) console.log('✅ Wrote: ' + join(dir, fileName))
-}
+  getWritePromises() {
+    const promises: Promise<any>[] = []
 
-
-async function fsCopy({ dirRead, dirWrite, srcFileName, aimFileName, options }: { dirRead: string, dirWrite: string, srcFileName: string, aimFileName: string, options: Options }){
-  await copyFile(join(dirRead, '../../' + srcFileName), join(dirWrite, aimFileName))
-  if (options.has('verbose')) console.log('✅ Wrote: ' + join(dirWrite, aimFileName))
-}
-
-
-function getDynamicTypesContent(writes: Writes) {
-  return `/** Current application routes */
-export type Routes = ${!writes.pipeRoutes ? 'string' : writes.pipeRoutes.slice(0,-2)}
-
-
-/** Current api GET endpoint url paths */
-export type GET_Paths = ${!writes.pipeGET ? 'string' : writes.pipeGET.slice(0,-2)}
-
-
-/** Current api POST endpoint url paths */
-export type POST_Paths = ${!writes.pipePOST ? 'string' : writes.pipePOST.slice(0,-2)}\n`
-}
-
-
-function getTypesContent(writes: Writes, pubTypesContent: string) {
-  const index = pubTypesContent.indexOf('/** gen */')
-
-  if (index === -1) throw new Error(cliErrors.noGenTypesTxt)
-
-  return pubTypesContent.slice(0, index) + getDynamicTypesContent(writes)
-}
-
-
-
-
-function getApiContent(writes: Writes, space: string) {
-  return `${writes.imports}${space}
-export const gets = {
-${writes.constGET.slice(0,-1)}
-}
-${space}
-export const posts = {
-${writes.constPOST.slice(0,-1)}
-}
-`
-}
-
-
-function getComponentContent(moduleName?: string) {
-  return `props => rc(props, ${moduleName})`
-}
-
-
-function getAppContent(layouts: Layouts, noLayoutRoutes: Route[], space: string) {
-  let app = ''
-  let imports = ''
-  let constRoute = ''
-
-  noLayoutRoutes.forEach(route => {
-    imports += getImportEntry(route.moduleName as string, route.fsPath, false)
-    constRoute += getConstEntry(route.urlPath, route.moduleName as string)
-    app += `    <Route path={${route.moduleName}.path} component={${getComponentContent(route.moduleName)}} matchFilters={${route.moduleName}.filters} />\n`
-  })
-
-  layouts.forEach((layout, fsPath) => {
-    imports += getImportEntry(layout.name, fsPath, false)
-
-    app +=`    <Route component={${getComponentContent(layout.name)}}>\n`
-
-    layout.routes.forEach(route => {
-      imports += getImportEntry(route.moduleName as string, route.fsPath, false)
-      constRoute += getConstEntry(route.urlPath, route.moduleName as string)
-      app += `      <Route path={${route.moduleName}.path} component={${getComponentContent(route.moduleName)}} matchFilters={${route.moduleName}.filters} />\n`
+    fundamentals.forEach((f, name) => {
+      switch(f.type) {
+        case 'copy':
+          if (this.whiteList.set.has(name)) {
+            promises.push(this.#fsCopy({ dirWrite: this.dirWriteFundamentals, srcFileName: `${name}.txt`, aimFileName: `${name}.${f.ext}` }))
+          }
+          break
+        case 'helper':
+          if (this.whiteList.set.has(name)) {
+            promises.push(this.#fsCopy({ dirWrite: this.dirWriteRoot, srcFileName: `${name}.txt`, aimFileName: `${name}.${f.ext}` }))
+          }
+          break
+      }
     })
 
-    app += `    </Route>\n`
-  })
+    if (this.config.plugins.solid) {
+      promises.push(
+        this.#fsWrite({ dir: this.dirWriteFundamentals, content: this.#getApiContent(), fileName: 'apis.ts' }),
+        this.#fsWrite({ dir: this.dirWriteFundamentals, content: this.#getEnvContent(), fileName: 'env.ts' }),
+        this.#fsWrite({ dir: this.dirWriteFundamentals, content: this.#getTypesContent(), fileName: 'types.d.ts' }),
+        this.#fsWrite({ dir: this.dirWriteFundamentals, content: this.#getAppContent(), fileName: 'app.tsx' }),
+      )
+    }
 
-  return `/**
- * 🧚‍♀️ How to access:
- *     - import { routes, App } from '@solidfun/app'
- */
-
-
-import { FE } from './fe'
-import { Layout } from './layout'
-import { Route as FunRoute } from './route'
-import { MetaProvider } from '@solidjs/meta'
-import { useContext, Suspense } from 'solid-js'
-import { FileRoutes } from '@solidjs/start/router'
-import { FE_Context, FE_ContextProvider } from './feContext'
-import { Route, Router, type RouteSectionProps } from '@solidjs/router'
+    return promises
+  }
 
 
-${imports}\n
+  #getApiContent() {
+    return `${this.writes.imports}${this.space}
+export const gets = {
+  ${this.writes.constGET.slice(0,-1)}
+}
+  ${this.space}
+export const posts = {
+  ${this.writes.constPOST.slice(0,-1)}
+}
+  `
+  }
+
+
+  #getEnvContent() {
+    return `export const env: ${this.config.envs?.map(env => `'${env.name}'`).join(' | ')} = '${this.env}'
+export const url: ${this.config.envs?.map(env => `'${env.url}'`).join(' | ')} = '${this.baseUrl}'
+  `
+  }
+
+
+  #getTypesContent() {
+    const index = this.fsSolidTypes?.indexOf('/** gen */')
+  
+    if (index === -1) throw new Error(cliErrors.noGenTypesTxt)
+  
+    return this.fsSolidTypes?.slice(0, index) + this.#getDynamicTypesContent()
+  }
+
+
+  #getDynamicTypesContent() {
+    return `/** Current application routes */
+export type Routes = ${!this.writes.pipeRoutes ? 'string' : this.writes.pipeRoutes.slice(0,-2)}
+  
+  
+/** Current api GET endpoint url paths */
+export type GET_Paths = ${!this.writes.pipeGET ? 'string' : this.writes.pipeGET.slice(0,-2)}
+  
+  
+ /** Current api POST endpoint url paths */
+export type POST_Paths = ${!this.writes.pipePOST ? 'string' : this.writes.pipePOST.slice(0,-2)}\n`
+  }
+
+
+  #getAppContent () {
+    let app = ''
+    let imports = ''
+    let constRoute = ''
+  
+    this.noLayoutRoutes.forEach(route => {
+      imports += getImportEntry(route.moduleName as string, route.fsPath, false)
+      constRoute += getConstEntry(route.urlPath, route.moduleName as string)
+      app += `    <Route path={${route.moduleName}.path} component={${getComponentContent(route.moduleName)}} matchFilters={${route.moduleName}.filters} />\n`
+    })
+  
+    this.layouts.forEach((layout, fsPath) => {
+      imports += getImportEntry(layout.name, fsPath, false)
+  
+      app +=`    <Route component={${getComponentContent(layout.name)}}>\n`
+  
+      layout.routes.forEach(route => {
+        imports += getImportEntry(route.moduleName as string, route.fsPath, false)
+        constRoute += getConstEntry(route.urlPath, route.moduleName as string)
+        app += `      <Route path={${route.moduleName}.path} component={${getComponentContent(route.moduleName)}} matchFilters={${route.moduleName}.filters} />\n`
+      })
+  
+      app += `    </Route>\n`
+    })
+
+    const marker = '/** gen */'
+    const marker1Index = this.fsApp?.indexOf(marker) || 0
+    const marker2Index = this.fsApp?.indexOf(marker, marker1Index + marker.length) || 0 // start searching after marker 1
+
+    // aggregate dynamic data
+    const dynamic = `${imports}\n
 export const routes = {
 ${constRoute.slice(0,-2)}
 }
-${space}
-export const App = () => <>
-  <Router root={Root}>
+${this.space}
+/**
+ * - \`<App />\` takes an optional \`root\` prop which is a function of type \`RouterRoot\` and demonstrated @ \`InternalRouterRoot\`
+ * - The primary reason to pass your own root is if you'd love additional context providers
+ * - As seen @ \`InternalRouterRoot\` and below, root children must be wrapped around \`<Suspense>\`, \`<MetaProvider>\` and \`<FE_ContextProvider>\`
+ * - After \`<FE_ContextProvider>\` please feel free to continue wrapping
+ * - Simple example \`app.tsx\`:
+        \`\`\`tsx
+        import { App } from '@solidfun/app'
+
+        export default () => <App root={root}/>
+        \`\`\`
+ * - Custom Example \`app.tsx\`:
+        \`\`\`tsx
+        import { Suspense } from 'solid-js'
+        import { MetaProvider } from '@solidjs/meta'
+        import { App, type RouterRoot } from '@solidfun/app'
+        import { FE_ContextProvider } from '@solidfun/feContext'
+        import type { RouteSectionProps } from '@solidjs/router'
+        import { AdditionalProvider } from '@src/lib/exampleContext'
+
+        const root: RouterRoot = (props: RouteSectionProps) => {
+            return <>
+                <AdditionalProvider>
+                    <FE_ContextProvider>
+                        <MetaProvider>
+                            <Suspense>{props.children}</Suspense>
+                        </MetaProvider>
+                    </FE_ContextProvider>
+                </AdditionalProvider>
+            </> 
+        }
+
+        export default () => <App root={root}/>
+        \`\`\` */
+export const App = ({ root }: { root?: RouterRoot }) => <>
+  <Router root={root || InternalRouterRoot}>
     <FileRoutes />
 ${app.slice(0,-1)}
   </Router>
 </>
-
-
-function Root (props: RouteSectionProps) {
-  return <>
-    <FE_ContextProvider>
-      <MetaProvider>
-        <Suspense>{props.children}</Suspense>
-      </MetaProvider>
-    </FE_ContextProvider>
-  </> 
-}
-
-
-/**
- * RC stands for Route Component
- * This gives each route render a fresh FE object
- * @param props 
- * @param component 
- * @returns 
- */
-function rc(props: RouteSectionProps, route: FunRoute | Layout) {
-  const fe = useContext(FE_Context)
-  const args: RouteComponentArgs = { fe, ...props }
-
-  if (route instanceof FunRoute) fe.messages.clearAll() // on route boot fresh messages
-
-  return route.component ? route.component(args) : undefined
-}
-
-export type RouteComponentArgs = RouteSectionProps & { fe: FE }
 `
+    /**
+     * - Part 1: `this.fsApp?.slice(0, marker1Index)`
+     * - Part 2: `dynamic`
+     * - Part 3: `this.fsApp?.slice(marker2Index + marker.length)`
+     *     - Adding the marker length allows us to remove the marker from the output
+     */
+    const content = this.fsApp?.slice(0, marker1Index) + dynamic + this.fsApp?.slice(marker2Index + marker.length)
+
+    return content
+  }
+
+
+  async #fsWrite({ dir, content, fileName }: { dir: string, content: string, fileName: string }) {
+    await writeFile(resolve(join(dir, fileName)), content, 'utf8')
+    if (this.options.has('verbose')) console.log('✅ Wrote: ' + join(dir, fileName))
+  }
+  
+  
+  async #fsCopy({ dirWrite, srcFileName, aimFileName }: { dirWrite: string, srcFileName: string, aimFileName: string }){
+    await copyFile(join(this.dirRead, '../../' + srcFileName), join(dirWrite, aimFileName))
+    if (this.options.has('verbose')) console.log('✅ Wrote: ' + join(dirWrite, aimFileName))
+  }
 }
 
 
-function getEnvContent(env: string, config: FunConfig, baseUrl: string) {
-  return `export const env: ${config.envs.map(env => `'${env.name}'`).join(' | ')} = '${env}'
-export const url: ${config.envs.map(env => `'${env.url}'`).join(' | ')} = '${baseUrl}'
-`
-}
+const getComponentContent = (moduleName?: string) => `props => rc(props, ${moduleName})`
 
 const getImportEntry = (name: string, fsPath: string, star: boolean) => `import ${star ? '* as ' : ''}${name} from '${fsPath.replace(/\.tsx?$/, '')}'\n`
 
@@ -460,53 +431,12 @@ function getApiPathFor(exportName: 'GET' | 'POST', content: string): string | nu
 }
 
 
-function getEnv() {
-  const env = process.argv[3]
-
-  if (!env) throw new Error(cliErrors.wrongEnv())
-
-  return env
-}
-
-
-function getBaseUrl(env: string, config: FunConfig): string {
-  let baseUrl
-
-  for (let configEnv of config.envs) {
-    if (env === configEnv.name) {
-      baseUrl = configEnv.url
-      break
-    }
-  }
-
-  if (!baseUrl) throw new Error(cliErrors.wrongEnv(env))
-
-  return baseUrl
-}
-
-
 function removeComments(code: string): string {
   return code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*/g, '');
 }
 
 
 const supportedApiMethods = { GET: 'GET', POST: 'POST' } as const
-
-
-class Question {
-  /** Name of module, examples: `(route, mongoose, valibot)` */
-  mod: string
-  /** The `question` */
-  text: string
-  /** Should this `mod` be built? `yes` or `no` */
-  answer: Answer
-
-  constructor(mod: string, text: string) {
-    this.mod = mod
-    this.text = text
-    this.answer = 'no'
-  }
-}
 
 
 class Options {
@@ -523,28 +453,39 @@ class Options {
 }
 
 
-/** The modules that won't be built */
-class ModuleBlackList {
-  mods: Set<string>
+/**
+ * - A fundamental is a file that has helpful stuff in it
+ * - A collection of these files is a plugin
+ * - Users opt into fundamentals by opting into plugins
+ * - So by opting into a plugin, users opt into a set of fundamentals
+ * - When building the fundamentals, this whitelist helps us know what fundamentals to build
+ */
+class FundamentalWhiteList {
+  /** When building the fundamentals, this whitelist helps us know what fundamentals to build */
+  set: Set<string>
 
   constructor() {
-    this.mods = new Set()
+    this.set = new Set()
   }
 
-  populate(questions: Questions) {
-    for (const q of questions.array) {
-      if (q.answer === 'no') this.mods.add(q.mod)
-    }
+  /**
+   * - Adds fundamentals to the whitelist if they live in plugins the `./fun.config.js` requests
+   * @returns Unaltered `config`
+   */
+  populate(config: FunConfig) {
+    fundamentals.forEach((f, name) => {
+      if (config.plugins[f.pluginName]) { // IF this fundamentals plugin is `true` @ `./fun.config.js`
+        this.set.add(name) // add this fundamental to the whitelist, b/c this is a fundamental that lives in a requested plugin
+      }
+    })
+
+    return config
   }
 }
 
 
 const availableOptions = {
-  all: 'all',
-  solid: 'solid',
   verbose: 'verbose',
-  valibot: 'valibot',
-  mongoose: 'mongoose',
 }
 
 
@@ -567,12 +508,3 @@ type Writes = {
   constPOST: string,
   pipeRoutes: string,
 }
-
-type APICounts = {
-  GET: 0,
-  POST: 0
-}
-
-type Answer = 'yes' | 'no'
-
-type CWD = string

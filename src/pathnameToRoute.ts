@@ -1,5 +1,5 @@
-import { API } from './pub/api'
-import { Route } from './pub/route'
+import { API } from './fundamentals/api'
+import { Route } from './fundamentals/route'
 
 /**
  * - From pathname

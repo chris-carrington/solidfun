@@ -95,7 +95,7 @@ npm install -g solidfun # -g allows, in bash, "fun build" w/o requiring "npx", -
   "paths": {
     "@src/*": ["./src/*"],
     "fun.config": ["./fun.config.js"],
-    "@solidfun/*": ["./.solidfun/pub/*"]
+    "@solidfun/*": ["./.solidfun/fundamentals/*"]
   }
 }
 ```
@@ -118,7 +118,7 @@ export default defineConfig({
     resolve: {
       alias: {
         '@src': path.resolve(cwd, 'src'),
-        '@solidfun': path.resolve(cwd, '.solidfun/pub'),
+        '@solidfun': path.resolve(cwd, '.solidfun/fundamentals'),
         'fun.config': path.resolve(cwd, './fun.config.js'),
       }
     }
@@ -349,7 +349,7 @@ export const GET = new API({ // POST is also available
               alias: {
                 '@root': path.resolve(cwd),
                 '@lib': path.resolve(cwd, 'src/lib'),
-                '@solidfun': path.resolve(cwd, '.solidfun/pub'),
+                '@solidfun': path.resolve(cwd, '.solidfun/fundamentals'),
               }
             }
           }

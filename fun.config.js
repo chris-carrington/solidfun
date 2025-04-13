@@ -9,7 +9,12 @@ export const config = {
   sessionDataTTL: 1000 * 60 * 60 * 24 * 3, // 3 days in ms
   envs: [
     { name: 'local', url: 'http://localhost:3000' },
-  ]
+  ],
+  plugins: {
+    solid: true,
+    valibot: true,
+    mongoose: true,
+  }
 }
 
 

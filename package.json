@@ -41,6 +41,8 @@
     "api",
     "framework",
     "typescript",
-    "intellisense"
+    "intellisense",
+    "fundamentals",
+    "fun"
   ]
 }
