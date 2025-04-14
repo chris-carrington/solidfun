@@ -352,6 +352,7 @@ ${this.#space}
  * - The primary reason to pass your own root is if you'd love additional context providers
  * - As seen @ \`InternalRouterRoot\` and below, root children must be wrapped around \`<Suspense>\`, \`<MetaProvider>\` and \`<FE_ContextProvider>\`
  * - After \`<FE_ContextProvider>\` please feel free to continue wrapping
+ * - \`<ErrorBoundary /> \` is optional
  * - Simple example \`app.tsx\`:
         \`\`\`tsx
         import { App } from '@solidfun/app'
@@ -370,11 +371,13 @@ ${this.#space}
         const root: RouterRoot = (props: RouteSectionProps) => {
             return <>
                 <AdditionalProvider>
-                    <FE_ContextProvider>
-                        <MetaProvider>
-                            <Suspense>{props.children}</Suspense>
-                        </MetaProvider>
-                    </FE_ContextProvider>
+                    <ErrorBoundary fallback={errorBoundaryFallback}>
+                        <FE_ContextProvider>
+                            <MetaProvider>
+                                <Suspense>{props.children}</Suspense>
+                            </MetaProvider>
+                        </FE_ContextProvider>
+                    </ErrorBoundary>
                 </AdditionalProvider>
             </> 
         }

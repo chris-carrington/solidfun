@@ -31,6 +31,7 @@ export const fundamentals = new Map([
   ['app', new Fundamental('tsx', 'solid', 'dynamic')],
   ['be', new Fundamental('ts', 'solid', 'copy')],
   ['beFetch', new Fundamental('ts', 'solid', 'copy')],
+  ['carousel', new Fundamental('tsx', 'solid', 'copy')],
   ['beMessages', new Fundamental('ts', 'solid', 'helper')],
   ['buildURL', new Fundamental('ts', 'solid', 'helper')],
   ['clear', new Fundamental('ts', 'solid', 'copy')],

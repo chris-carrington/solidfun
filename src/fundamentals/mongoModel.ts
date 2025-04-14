@@ -1,7 +1,7 @@
 /**
  * 🧚‍♀️ How to access:
- *     - import { MongoModel } from '@solidfun/mongoose/mongoModel'
- *     - import type { InferMongoModel } from '@solidfun/mongoose/mongoModel'
+ *     - import { MongoModel } from '@solidfun/mongoModel'
+ *     - import type { InferMongoModel } from '@solidfun/mongoModel'
  */
 
 

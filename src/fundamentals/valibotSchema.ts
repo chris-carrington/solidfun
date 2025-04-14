@@ -1,7 +1,7 @@
 /**
  * 🧚‍♀️ How to access:
- *     - import { ValibotSchema } from '@solidfun/valibot'
- *     - import type { InferValibotSchema } from '@solidfun/valibot'
+ *     - import { ValibotSchema } from '@solidfun/valibotSchema'
+ *     - import type { InferValibotSchema } from '@solidfun/valibotSchema'
  */
 
 
