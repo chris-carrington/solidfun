@@ -2,85 +2,95 @@ import { fileURLToPath } from 'node:url'
 import { cliErrors } from './cliErrors.js'
 import type { FunConfig } from '../index.js'
 import { fundamentals } from '../fundamentals.js'
-import { join, resolve, dirname } from 'node:path'
+import path, { join, resolve, dirname } from 'node:path'
 import { mkdir, readdir, writeFile, readFile, copyFile } from 'node:fs/promises'
 
 
 
 /**
- * - Build types, components and functions for a `Solid Fun` environment!
- * - Configure w/ "fun.config.js" @ your cwd
- * - Options:
- *     - `--verbose`: Log what's happening + extra logs during wizard
+ * - Build types, components and functions
+ * - Configure w/ `fun.config.js`
+ * - Command Options:
+ *     - `--verbose`: Log what's happening
+ * @param cwd Common working directory
  */
 export async function cliBuild(cwd: string) {
-  const athena = await Athena.Create(cwd)
-
-  if (athena.config.plugins.solid) {
-    await Promise.all([
-      mkdir(athena.dirWriteFundamentals, { recursive: true }),
-      athena.doInitialSolidReads()
-    ])
-  }
-
-  await Promise.all(athena.getWritePromises())
-
-  if (!athena.options.has('verbose')) console.log(`✅ Wrote: .solidfun`)
+  const athena = await Athena.Create(cwd) // get athena object
+  await athena.build() // ask it to do a build
 }
 
 
 
 /**
- * - From a tree shakability perspective, functions > classes, but all in this file needs all else and there are a lot of variables & functions so a class is perfect b/c w/o it there'd be a lot of variable argument passing
- * - Think of Athena like Jarvis or Alfred, hold all my stuff and do some stuff w/ it please
+ * - From a tree shake perspective, functions > classes, but: 
+ *     - Nothing in `fun build` will be tree shaken, it's all required
+ *     - `fun build` requires lots of variables and functions which know about each other
+ *     - This is where classes shine b/c w/o classes here, there would be a lot of function arg passing or atleast an aggregating object like athena passed between functions but with a class, just go to `this` & all the variales & functions are there, perfect!
+ * - Think of Athena like Jarvis or Alfred, hold all my stuff and stuff w/ it please, in this case, hold environment variables and do a build please
  */
 class Athena {
-  cwd: string
-  env: string
-  space = '\n'
-  baseUrl: string
-  fsApp?: string
-  config: FunConfig
-  dirRead: string
-  fsSolidTypes?: string
-  dirWriteRoot: string
-  dirWriteFundamentals: string
-  layouts: Layouts = new Map()
-  options: Options = new Options()
-  noLayoutRoutes: Route[] = [] 
-  whiteList: FundamentalWhiteList = new FundamentalWhiteList()
-  apiCounts: { GET: number, POST: number } = { GET: 0, POST: 0 }
-  writes: Writes = { types: '', imports: '', pipeGET: '', pipePOST: '', constGET: '', constPOST: '', pipeRoutes: '' }
-
-
-  private constructor(cwd: string, env: string, baseUrl: string, config: FunConfig, configPath: string) {
-    this.cwd = cwd
-    this.env = env
-    this.baseUrl = baseUrl
-    this.config = this.whiteList.populate(config)
-
-    this.dirWriteRoot = join(cwd, '.solidfun')
-    this.dirWriteFundamentals = join(cwd, '.solidfun/fundamentals')
-    this.dirRead = dirname(fileURLToPath(import.meta.url))
-
-    if (this.options.has('verbose')) console.log(`✅ Read: ${configPath}`)
-  }
+  #cwd: string
+  #env: string
+  #space = '\n'
+  #baseUrl: string
+  #fsApp?: string
+  #config: FunConfig
+  #dirRead: string
+  #fsSolidTypes?: string
+  #dirWriteRoot: string
+  #dirWriteFundamentals: string
+  #layouts: Layouts = new Map()
+  #options: CommandOptions = new CommandOptions()
+  #noLayoutRoutes: Route[] = [] 
+  #whiteList: FundamentalWhiteList = new FundamentalWhiteList()
+  #apiCounts: { GET: number, POST: number } = { GET: 0, POST: 0 }
+  #writes: Writes = { types: '', imports: '', pipeGET: '', pipePOST: '', constGET: '', constPOST: '', pipeRoutes: '' }
 
 
   /**
-   * - Get the environment specified in the command
-   * - Get the config
-   * - Get the env baseUrl
-   * - Populate the white list
-   * - Populate lots of helpful variables
+   * - What `Create()` does: 
+   *     - Get the environment (`env`) in the command: if the command is `fun build local` the `env` is `local`
+   *     - Get the `config` defined @ `fun.config.js`
+   *     - Get the `baseUrl` by aligning the `config` w/ the `env`
+   *     - Populate the white list of fundamentals that must be included in the build
+   *     - Populate lots of additional helpful variables
    * @param cwd - Common working directory
-   * @returns athena object that has lost of helpful variables and functions to do w/ those variables
+   * @returns An athena object
    */
-  static async Create(cwd: string) {
-    const env = Athena.#getEnv()
-    const {config, configPath} = await Athena.#getConfig(cwd)
-    const baseUrl = Athena.#getBaseUrl(env, config)
-    return new Athena(cwd, env, baseUrl, config, configPath)
+    static async Create(cwd: string) {
+      const env = Athena.#getEnv()
+      const {config, configPath} = await Athena.#getConfig(cwd)
+      const baseUrl = Athena.#getBaseUrl(env, config)
+  
+      /** 
+       * - Why get these values (`env`, `baseUrl`, `config`, `configPath`) before creating an athena object? 
+       * - Better downstream types, example: this way, `athena.env` is of type `string`, not type `string` | `undefined`
+       */
+      const athena = new Athena(cwd, env, baseUrl, config, configPath)
+  
+      return athena
+    }
+
+
+    async build() {
+      await this.#makeDirectoriesAndRead()
+      await this.#write()
+
+      this.#goodByeLog()
+    }
+
+
+  private constructor(cwd: string, env: string, baseUrl: string, config: FunConfig, configPath: string) {
+    this.#cwd = cwd
+    this.#env = env
+    this.#baseUrl = baseUrl
+    this.#config = this.#whiteList.populate(config)
+
+    this.#dirWriteRoot = join(cwd, '.solidfun')
+    this.#dirWriteFundamentals = join(cwd, '.solidfun/fundamentals')
+    this.#dirRead = dirname(fileURLToPath(import.meta.url))
+
+    if (this.#options.has('verbose')) console.log(`✅ Read: ${configPath}`)
   }
 
 
@@ -121,20 +131,28 @@ class Athena {
   }
 
 
-  async doInitialSolidReads() {  
-    if (this.config.plugins.solid) {
-      if (!this.config.apiDir || typeof this.config.apiDir !== 'string') throw new Error('❌ When using the solid plugin, `config.apiDir` must be a truthy string')
-      if (!this.config.appDir || typeof this.config.appDir !== 'string') throw new Error('❌ When using the solid plugin, `config.appDir` must be a truthy string')
+  async #makeDirectoriesAndRead() {
+    await Promise.all([
+      mkdir(this.#dirWriteFundamentals, { recursive: true }),
+      this.#doInitialSolidReads()
+    ])
+  }
+
+
+  async #doInitialSolidReads() {  
+    if (this.#config.plugins.solid) {
+      if (!this.#config.apiDir || typeof this.#config.apiDir !== 'string') throw new Error('❌ When using the solid plugin, `config.apiDir` must be a truthy string')
+      if (!this.#config.appDir || typeof this.#config.appDir !== 'string') throw new Error('❌ When using the solid plugin, `config.appDir` must be a truthy string')
   
       const [app, types] = await Promise.all([
-        readFile(join(this.dirRead, '../../app.txt'), 'utf-8'),
-        readFile(join(this.dirRead, '../../types.d.txt'), 'utf-8'),
-        this.#bindApiData(resolve(this.cwd, this.config.apiDir)),
-        this.#bindAppData(resolve(this.cwd, this.config.appDir)),
+        readFile(join(this.#dirRead, '../../app.txt'), 'utf-8'),
+        readFile(join(this.#dirRead, '../../types.d.txt'), 'utf-8'),
+        this.#bindApiData(resolve(this.#cwd, this.#config.apiDir)),
+        this.#bindAppData(resolve(this.#cwd, this.#config.appDir)),
       ])
 
-      this.fsApp = app
-      this.fsSolidTypes = types
+      this.#fsApp = app
+      this.#fsSolidTypes = types
     }
   }
 
@@ -155,17 +173,17 @@ class Athena {
         const postPath = getApiPathFor('POST', cleanedContent)
 
         if (getPath) {
-          this.apiCounts.GET++
-          this.writes.pipeGET += getPipeEntry(getPath)
-          this.writes.imports += getImportEntry('GET' + this.apiCounts.GET, fsPath, true)
-          this.writes.constGET += getConstEntry(getPath, 'GET' + this.apiCounts.GET, 'GET')
+          this.#apiCounts.GET++
+          this.#writes.pipeGET += getPipeEntry(getPath)
+          this.#writes.imports += this.#getImportEntry('GET' + this.#apiCounts.GET, fsPath, true, 'apiDir')
+          this.#writes.constGET += getConstEntry(getPath, 'GET' + this.#apiCounts.GET, 'GET')
         }
 
         if (postPath) {
-          this.apiCounts.POST++
-          this. writes.pipePOST += getPipeEntry(postPath)
-          this.writes.imports += getImportEntry('POST' + this.apiCounts.POST, fsPath, true)
-          this.writes.constPOST += getConstEntry(postPath, 'POST' + this.apiCounts.POST, 'POST')
+          this.#apiCounts.POST++
+          this. #writes.pipePOST += getPipeEntry(postPath)
+          this.#writes.imports += this.#getImportEntry('POST' + this.#apiCounts.POST, fsPath, true, 'apiDir')
+          this.#writes.constPOST += getConstEntry(postPath, 'POST' + this.#apiCounts.POST, 'POST')
         }
       }
     }
@@ -190,7 +208,7 @@ class Athena {
           const route: Route = { fsPath, urlPath }
           const nameOfLayout = getLayout(cleanedContent)
 
-          this.writes.pipeRoutes += getPipeEntry(route.urlPath)
+          this.#writes.pipeRoutes += getPipeEntry(route.urlPath)
 
           if (nameOfLayout) {
             const layoutImportPath = getLayoutFrom(cleanedContent, nameOfLayout)
@@ -198,16 +216,16 @@ class Athena {
             if (layoutImportPath) {
               route.fsLayoutPath = resolve(dirname(fsPath), layoutImportPath)
 
-              const mapRes = this.layouts.get(route.fsLayoutPath)
+              const mapRes = this.#layouts.get(route.fsLayoutPath)
 
-              if (!mapRes) this.layouts.set(route.fsLayoutPath, { name: 'layout' + (this.layouts.size + 1), routes: [route] })
+              if (!mapRes) this.#layouts.set(route.fsLayoutPath, { name: 'layout' + (this.#layouts.size + 1), routes: [route] })
               else mapRes.routes.push(route)
 
-              route.moduleName = `route_${this.layouts.size}_${mapRes ? mapRes.routes.length : 1}`
+              route.moduleName = `route_${this.#layouts.size}_${mapRes ? mapRes.routes.length : 1}`
             }
           } else {
-            this.noLayoutRoutes.push(route)
-            route.moduleName = `route_${this.noLayoutRoutes.length}`
+            this.#noLayoutRoutes.push(route)
+            route.moduleName = `route_${this.#noLayoutRoutes.length}`
           }
         }
       }
@@ -215,30 +233,35 @@ class Athena {
   }
 
 
-  getWritePromises() {
+  async #write() {
+    await Promise.all(this.#getWritePromises())
+  }
+
+
+  #getWritePromises() {
     const promises: Promise<any>[] = []
 
     fundamentals.forEach((f, name) => {
       switch(f.type) {
         case 'copy':
-          if (this.whiteList.set.has(name)) {
-            promises.push(this.#fsCopy({ dirWrite: this.dirWriteFundamentals, srcFileName: `${name}.txt`, aimFileName: `${name}.${f.ext}` }))
+          if (this.#whiteList.set.has(name)) {
+            promises.push(this.#fsCopy({ dirWrite: this.#dirWriteFundamentals, srcFileName: `${name}.txt`, aimFileName: `${name}.${f.ext}` }))
           }
           break
         case 'helper':
-          if (this.whiteList.set.has(name)) {
-            promises.push(this.#fsCopy({ dirWrite: this.dirWriteRoot, srcFileName: `${name}.txt`, aimFileName: `${name}.${f.ext}` }))
+          if (this.#whiteList.set.has(name)) {
+            promises.push(this.#fsCopy({ dirWrite: this.#dirWriteRoot, srcFileName: `${name}.txt`, aimFileName: `${name}.${f.ext}` }))
           }
           break
       }
     })
 
-    if (this.config.plugins.solid) {
+    if (this.#config.plugins.solid) {
       promises.push(
-        this.#fsWrite({ dir: this.dirWriteFundamentals, content: this.#getApiContent(), fileName: 'apis.ts' }),
-        this.#fsWrite({ dir: this.dirWriteFundamentals, content: this.#getEnvContent(), fileName: 'env.ts' }),
-        this.#fsWrite({ dir: this.dirWriteFundamentals, content: this.#getTypesContent(), fileName: 'types.d.ts' }),
-        this.#fsWrite({ dir: this.dirWriteFundamentals, content: this.#getAppContent(), fileName: 'app.tsx' }),
+        this.#fsWrite({ dir: this.#dirWriteFundamentals, content: this.#getApiContent(), fileName: 'apis.ts' }),
+        this.#fsWrite({ dir: this.#dirWriteFundamentals, content: this.#getEnvContent(), fileName: 'env.ts' }),
+        this.#fsWrite({ dir: this.#dirWriteFundamentals, content: this.#getTypesContent(), fileName: 'types.d.ts' }),
+        this.#fsWrite({ dir: this.#dirWriteFundamentals, content: this.#getAppContent(), fileName: 'app.tsx' }),
       )
     }
 
@@ -247,45 +270,45 @@ class Athena {
 
 
   #getApiContent() {
-    return `${this.writes.imports}${this.space}
+    return `${this.#writes.imports}${this.#space}
 export const gets = {
-  ${this.writes.constGET.slice(0,-1)}
+  ${this.#writes.constGET.slice(0,-1)}
 }
-  ${this.space}
+  ${this.#space}
 export const posts = {
-  ${this.writes.constPOST.slice(0,-1)}
+  ${this.#writes.constPOST.slice(0,-1)}
 }
   `
   }
 
 
   #getEnvContent() {
-    return `export const env: ${this.config.envs?.map(env => `'${env.name}'`).join(' | ')} = '${this.env}'
-export const url: ${this.config.envs?.map(env => `'${env.url}'`).join(' | ')} = '${this.baseUrl}'
+    return `export const env: ${this.#config.envs?.map(env => `'${env.name}'`).join(' | ')} = '${this.#env}'
+export const url: ${this.#config.envs?.map(env => `'${env.url}'`).join(' | ')} = '${this.#baseUrl}'
   `
   }
 
 
   #getTypesContent() {
-    const index = this.fsSolidTypes?.indexOf('/** gen */')
+    const index = this.#fsSolidTypes?.indexOf('/** gen */')
   
     if (index === -1) throw new Error(cliErrors.noGenTypesTxt)
   
-    return this.fsSolidTypes?.slice(0, index) + this.#getDynamicTypesContent()
+    return this.#fsSolidTypes?.slice(0, index) + this.#getDynamicTypesContent()
   }
 
 
   #getDynamicTypesContent() {
     return `/** Current application routes */
-export type Routes = ${!this.writes.pipeRoutes ? 'string' : this.writes.pipeRoutes.slice(0,-2)}
+export type Routes = ${!this.#writes.pipeRoutes ? 'string' : this.#writes.pipeRoutes.slice(0,-2)}
   
   
 /** Current api GET endpoint url paths */
-export type GET_Paths = ${!this.writes.pipeGET ? 'string' : this.writes.pipeGET.slice(0,-2)}
+export type GET_Paths = ${!this.#writes.pipeGET ? 'string' : this.#writes.pipeGET.slice(0,-2)}
   
   
  /** Current api POST endpoint url paths */
-export type POST_Paths = ${!this.writes.pipePOST ? 'string' : this.writes.pipePOST.slice(0,-2)}\n`
+export type POST_Paths = ${!this.#writes.pipePOST ? 'string' : this.#writes.pipePOST.slice(0,-2)}\n`
   }
 
 
@@ -294,19 +317,19 @@ export type POST_Paths = ${!this.writes.pipePOST ? 'string' : this.writes.pipePO
     let imports = ''
     let constRoute = ''
   
-    this.noLayoutRoutes.forEach(route => {
-      imports += getImportEntry(route.moduleName as string, route.fsPath, false)
+    this.#noLayoutRoutes.forEach(route => {
+      imports += this.#getImportEntry(route.moduleName as string, route.fsPath, false, 'appDir')
       constRoute += getConstEntry(route.urlPath, route.moduleName as string)
       app += `    <Route path={${route.moduleName}.path} component={${getComponentContent(route.moduleName)}} matchFilters={${route.moduleName}.filters} />\n`
     })
   
-    this.layouts.forEach((layout, fsPath) => {
-      imports += getImportEntry(layout.name, fsPath, false)
+    this.#layouts.forEach((layout, fsPath) => {
+      imports += this.#getImportEntry(layout.name, fsPath, false, 'appDir')
   
       app +=`    <Route component={${getComponentContent(layout.name)}}>\n`
   
       layout.routes.forEach(route => {
-        imports += getImportEntry(route.moduleName as string, route.fsPath, false)
+        imports += this.#getImportEntry(route.moduleName as string, route.fsPath, false, 'appDir')
         constRoute += getConstEntry(route.urlPath, route.moduleName as string)
         app += `      <Route path={${route.moduleName}.path} component={${getComponentContent(route.moduleName)}} matchFilters={${route.moduleName}.filters} />\n`
       })
@@ -315,17 +338,17 @@ export type POST_Paths = ${!this.writes.pipePOST ? 'string' : this.writes.pipePO
     })
 
     const marker = '/** gen */'
-    const marker1Index = this.fsApp?.indexOf(marker) || 0
-    const marker2Index = this.fsApp?.indexOf(marker, marker1Index + marker.length) || 0 // start searching after marker 1
+    const marker1Index = this.#fsApp?.indexOf(marker) || 0
+    const marker2Index = this.#fsApp?.indexOf(marker, marker1Index + marker.length) || 0 // start searching after marker 1
 
     // aggregate dynamic data
     const dynamic = `${imports}\n
 export const routes = {
 ${constRoute.slice(0,-2)}
 }
-${this.space}
+${this.#space}
 /**
- * - \`<App />\` takes an optional \`root\` prop which is a function of type \`RouterRoot\` and demonstrated @ \`InternalRouterRoot\`
+ * - \`<App />\` takes an optional \`root\` prop which is a function of type \`RouterRoot\`. Example @ \`InternalRouterRoot\` and below
  * - The primary reason to pass your own root is if you'd love additional context providers
  * - As seen @ \`InternalRouterRoot\` and below, root children must be wrapped around \`<Suspense>\`, \`<MetaProvider>\` and \`<FE_ContextProvider>\`
  * - After \`<FE_ContextProvider>\` please feel free to continue wrapping
@@ -371,7 +394,7 @@ ${app.slice(0,-1)}
      * - Part 3: `this.fsApp?.slice(marker2Index + marker.length)`
      *     - Adding the marker length allows us to remove the marker from the output
      */
-    const content = this.fsApp?.slice(0, marker1Index) + dynamic + this.fsApp?.slice(marker2Index + marker.length)
+    const content = this.#fsApp?.slice(0, marker1Index) + dynamic + this.#fsApp?.slice(marker2Index + marker.length)
 
     return content
   }
@@ -379,24 +402,49 @@ ${app.slice(0,-1)}
 
   async #fsWrite({ dir, content, fileName }: { dir: string, content: string, fileName: string }) {
     await writeFile(resolve(join(dir, fileName)), content, 'utf8')
-    if (this.options.has('verbose')) console.log('✅ Wrote: ' + join(dir, fileName))
+    if (this.#options.has('verbose')) console.log('✅ Wrote: ' + join(dir, fileName))
   }
   
   
   async #fsCopy({ dirWrite, srcFileName, aimFileName }: { dirWrite: string, srcFileName: string, aimFileName: string }){
-    await copyFile(join(this.dirRead, '../../' + srcFileName), join(dirWrite, aimFileName))
-    if (this.options.has('verbose')) console.log('✅ Wrote: ' + join(dirWrite, aimFileName))
+    await copyFile(join(this.#dirRead, '../../' + srcFileName), join(dirWrite, aimFileName))
+    if (this.#options.has('verbose')) console.log('✅ Wrote: ' + join(dirWrite, aimFileName))
+  }
+
+  #getImportEntry (moduleName: string, fsPath: string, star: boolean, type: 'apiDir' | 'appDir'){
+    return `import ${star ? '* as ' : ''}${moduleName} from '${getRelativeImportPath(fsPath, this.#config[type] || '')}'\n`
+  } 
+
+  #goodByeLog() {
+    if (!this.#options.has('verbose')) console.log(`✅ Wrote: .solidfun`)
   }
 }
 
 
 const getComponentContent = (moduleName?: string) => `props => rc(props, ${moduleName})`
 
-const getImportEntry = (name: string, fsPath: string, star: boolean) => `import ${star ? '* as ' : ''}${name} from '${fsPath.replace(/\.tsx?$/, '')}'\n`
-
 const getConstEntry = (urlPath: string, moduleName: string, apiModuleName?: keyof typeof supportedApiMethods) => `  '${urlPath}': ${moduleName}${apiModuleName ? '.' + apiModuleName : ''},\n`
 
 const getPipeEntry = (path: string) => `'${path}' | `
+
+
+/**
+ * @param fsPath Example: `/Users/brucewayne/justiceleague/src/api/example` - Path in file system to asset
+ * @param destDir Example: `./src/api` - As set in fun.config.js
+ * @returns Example: `../../src/api/contracts` - Relative path to asset
+ * - B/c we know:
+ *     - `fundamentals` is 2 folders in from root
+ *     - How to get from root to api folder
+ */
+function getRelativeImportPath(fsPath: string, destDir: string): string {
+  const root = process.cwd() // fs path to package.json directory
+  const rootToDest = path.relative(root, destDir) // fun config path relative to package.json directory
+  const split = fsPath.split(rootToDest)
+  const withExtension = '../../' + rootToDest + split[1]
+  const withoutExtension = withExtension.replace('.tsx', '').replace('.ts', '')
+
+  return withoutExtension
+}
 
 
 /**  Get the name the layout is identified as in the route file */
@@ -417,12 +465,12 @@ function getLayoutFrom(content: string, identifier: string): string | undefined 
 
 /** Provide the content of a file and if we want the GET or POST path and get it back or null */
 function getApiPathFor(exportName: 'GET' | 'POST', content: string): string | null {
-  const exportRegex = new RegExp(`export const ${exportName}\\s*=`, 'g');
-  const match = exportRegex.exec(content);
+  const exportRegex = new RegExp(`export const ${exportName}\\s*=`, 'g')
+  const match = exportRegex.exec(content)
 
   if (match) { // export const GET or POST is w/in this content
     const subContent = content.slice(match.index) // find the path *after* the matched export
-    const pathMatch = /path\s*:\s*(['"`])([^'"`]+)\1/.exec(subContent);
+    const pathMatch = /path\s*:\s*(['"`])([^'"`]+)\1/.exec(subContent)
 
     return pathMatch ? (pathMatch[2] || '').trim() : null // the path for the api
   }
@@ -432,14 +480,14 @@ function getApiPathFor(exportName: 'GET' | 'POST', content: string): string | nu
 
 
 function removeComments(code: string): string {
-  return code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*/g, '');
+  return code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*/g, '')
 }
 
 
 const supportedApiMethods = { GET: 'GET', POST: 'POST' } as const
 
 
-class Options {
+class CommandOptions {
   current: Set<string>
 
   constructor() {
@@ -450,6 +498,12 @@ class Options {
   has(option: keyof typeof availableOptions) {
     return this.current.has('--' + option)
   }
+}
+
+
+/** Available command options, all other options done via typesafe config */
+const availableOptions = {
+  verbose: 'verbose',
 }
 
 
@@ -481,11 +535,6 @@ class FundamentalWhiteList {
 
     return config
   }
-}
-
-
-const availableOptions = {
-  verbose: 'verbose',
 }
 
 

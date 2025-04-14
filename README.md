@@ -83,7 +83,7 @@
 nvm use 22
 npm create solid # typescript is required
 npm i @types/node -D
-npm install -g solidfun # -g allows, in bash, "fun build" w/o requiring "npx", -g is not required
+npm install solidfun # -g is optional, it allows, in bash, "fun build" w/o requiring "npx" 🧚‍♀️
 ```
 
 
@@ -170,7 +170,10 @@ export const config = {
   sessionDataTTL: 1000 * 60 * 60 * 24 * 3, // 3 days in ms
   envs: [
     { name: 'local', url: 'http://localhost:3000' },
-  ]
+  ],
+  plugins: {
+    solid: true,
+  }
 }
 
 
