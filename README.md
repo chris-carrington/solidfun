@@ -114,8 +114,8 @@ export default defineConfig({
     resolve: {
       alias: {
         '@src': path.resolve(cwd, 'src'),
-        '@solidfun': path.resolve(cwd, '.solidfun/fundamentals'),
         'fun.config': path.resolve(cwd, './fun.config.js'),
+        '@solidfun': path.resolve(cwd, '.solidfun/fundamentals'),
       }
     }
   }
@@ -375,8 +375,8 @@ export const GET = new API({ // POST is also available
             resolve: {
               alias: {
                 '@src': path.resolve(cwd, 'src'),
-                '@solidfun': path.resolve(cwd, '.solidfun/fundamentals'),
                 'fun.config': path.resolve(cwd, './fun.config.js'),
+                '@solidfun': path.resolve(cwd, '.solidfun/fundamentals'),
               }
             }
           }

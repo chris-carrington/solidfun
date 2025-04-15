@@ -9,13 +9,13 @@
  * - Types
  *     - `copy`: Simply copy the content from the src folder to their output folder
  *     - `helper`: Not a fundamental but helps them
- *     - `dynamic`: Put dynamic content into this fundamental
+ *     - `custom`: Copy + Custom implementation
  */
 class Fundamental {
   /**
    * @param {string} ext - File extension
    * @param {'solid' | 'mongoose' | 'valibot'} pluginName - Name of plugin
-   * @param {'copy' | 'helper' | 'dynamic'} type Type of fundamental
+   * @param {'copy' | 'helper' | 'custom'} type Type of fundamental
    */
   constructor(ext, pluginName, type) {
     this.ext = ext
@@ -28,8 +28,8 @@ class Fundamental {
 export const fundamentals = new Map([
   ['a', new Fundamental('tsx', 'solid', 'copy')],
   ['api', new Fundamental('ts', 'solid', 'copy')],
-  ['apis', new Fundamental('ts', 'solid', 'dynamic')],
-  ['app', new Fundamental('tsx', 'solid', 'dynamic')],
+  ['apis', new Fundamental('ts', 'solid', 'custom')],
+  ['app', new Fundamental('tsx', 'solid', 'custom')],
   ['be', new Fundamental('ts', 'solid', 'copy')],
   ['beFetch', new Fundamental('ts', 'solid', 'copy')],
   ['carousel', new Fundamental('tsx', 'solid', 'copy')],
@@ -41,7 +41,7 @@ export const fundamentals = new Map([
   ['contextProvider', new Fundamental('tsx', 'solid', 'copy')],
   ['createOnSubmit', new Fundamental('ts', 'solid', 'copy')],
   ['dateTimeFormat', new Fundamental('tsx', 'solid', 'copy')],
-  ['env', new Fundamental('ts', 'solid', 'dynamic')],
+  ['env', new Fundamental('ts', 'solid', 'custom')],
   ['eventToPathname', new Fundamental('ts', 'solid', 'helper')],
   ['fe', new Fundamental('ts', 'solid', 'copy')],
   ['feContext', new Fundamental('tsx', 'solid', 'copy')],
@@ -63,7 +63,7 @@ export const fundamentals = new Map([
   ['selectPlaceholder', new Fundamental('ts', 'solid', 'copy')],
   ['session', new Fundamental('ts', 'solid', 'copy')],
   ['submit', new Fundamental('tsx', 'solid', 'copy')],
-  ['types', new Fundamental('ts', 'solid', 'dynamic')],
+  ['types', new Fundamental('ts', 'solid', 'custom')],
   ['url', new Fundamental('ts', 'solid', 'copy')],
   ['valibotSchema', new Fundamental('ts', 'valibot', 'copy')],
   ['vars', new Fundamental('ts', 'solid', 'copy')],

@@ -258,12 +258,14 @@ class Athena {
 
     if (this.#config.plugins.solid) {
       promises.push(
-        this.#fsWrite({ dir: this.#dirWriteFundamentals, content: this.#getApiContent(), fileName: 'apis.ts' }),
         this.#fsWrite({ dir: this.#dirWriteFundamentals, content: this.#getEnvContent(), fileName: 'env.ts' }),
-        this.#fsWrite({ dir: this.#dirWriteFundamentals, content: this.#getTypesContent(), fileName: 'types.d.ts' }),
+        this.#fsWrite({ dir: this.#dirWriteFundamentals, content: this.#getApiContent(), fileName: 'apis.ts' }),
         this.#fsWrite({ dir: this.#dirWriteFundamentals, content: this.#getAppContent(), fileName: 'app.tsx' }),
+        this.#fsWrite({ dir: this.#dirWriteFundamentals, content: this.#getTypesContent(), fileName: 'types.d.ts' }),
       )
     }
+
+    promises.push(this.#fsCopy({ dirWrite: this.#dirWriteRoot, srcFileName: 'tsconfig.txt', aimFileName: 'tsconfig.json' }))
 
     return promises
   }
@@ -283,7 +285,13 @@ export const posts = {
 
 
   #getEnvContent() {
-    return `export const env: ${this.#config.envs?.map(env => `'${env.name}'`).join(' | ')} = '${this.#env}'
+    return `/**
+ * 🧚‍♀️ How to access:
+ *     - import { env, url } from '@solidfun/env'
+ */
+
+
+export const env: ${this.#config.envs?.map(env => `'${env.name}'`).join(' | ')} = '${this.#env}'
 export const url: ${this.#config.envs?.map(env => `'${env.url}'`).join(' | ')} = '${this.#baseUrl}'
   `
   }
