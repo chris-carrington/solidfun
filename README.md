@@ -124,6 +124,7 @@ export default defineConfig({
 
 
 ### Create a `.env` file:
+- Only required when you'd love to store visitor data in cookies
 - This password is used to encrypt/decrypt cookie values
 - It must be at least 32 characters long b/c of how web crypto works, example:
 ```toml
@@ -173,28 +174,32 @@ export const config = {
  * @property {string} sessionId
  */
 ```
-- Explaining the fun config above:
+- Explaining the fun config file above:
     - A fundamental is a file that has helpful stuff in it
     - A group of these fundamentals is a plugin
     - To gain access to fundamentals, install plugins
     - To install plugins, set `config.plugins[plugin]` to `true`
-    - The only config prop that is required is `plugins` and if `plugins.solid` is `true` a `SessionData` type is required
+    - The only `config` prop that is required is `plugins`
+    - If `plugins.solid` is `true` and you'd love to work w/ browser cookies, defining a `SessionData` type as seen in the code above is required
     - The `SessionData` type:
-        - Tells your app the shape of the data you'd love to store in sessions
-        - Thanks to Solid Start users always have a session, and you can optionally store data in that session
-        - The data you store in a session could be a `name` or `email`, we recommend an `id` or 2 and to get the rest of the data about a user from the database
-    - The  `./fun.config.js` file is not a typescript file and is a javascript file b/c this file is read from the command line thanks to `fun build` and it's easier to run js files in the command line then ts files. But thanks to the `// @ts-check ` comment on line 1 above, & the jsdoc comments, there is still intellisense in this file! 🙌
+        - Thanks to Solid Start, all site visitors, have a browser cookie that has a key and value
+        - The cookie key is configured  @ `./fun.config.js` w/ the `cookieKey` prop and the value is a stringified and encrypted object that Solid Start calls a session
+        - `session.data` is an object that can hold whatever we want. @ `session.data[sessionDataKey]` we hold the sessionData
+        - The `SessionData` type is configured via JSDOC @ `./fun.config.js`
+        - The data you store in a session could be a `name` or `email`, we recommend an `id` or 2 and to get the rest of the data about a user from the database when verifying the session is also in the db
+        - We recomend also storing a sessionId in the database so then if you'd ever love to sign anyone out, that can be done with a simple db update
+    - The  `./fun.config.js` file is not a typescript file and is a javascript file b/c this file is read from the command line thanks to `fun build` and it's easier to run js files in the command line then ts files. But thanks to the `// @ts-check ` comment on line 1 above, & the jsdoc comments, there is still intellisense in this file! 🤓
 
 
 ### 😅 Test a build
 ```bash
-fun build local # if you did: npm i -g solidfun (fastest builds)
-npx fun build local # if you did: npm i solidfun
+fun build local # if you've done: npm i -g solidfun (fastest builds)
+npx fun build local # if you've done: npm i solidfun
 ```
 
 
 
-### Create a route
+### 🥹 Create a route
 - @ `./src/app/Test.tsx`:
 ```tsx
 import { Route } from '@solidfun/route'
@@ -245,14 +250,14 @@ export async function POST(event: APIEvent) {
 
 
 
-### Create an api endpoint
+### 😎 Create an api endpoint
 - @ `./src/api/test.ts`
 ```tsx
 import { API } from '@solidfun'
 
 
 export const GET = new API({ // POST is also available
-  path: '/api/test/id?', // optional / required path params available @ routes & api endpoints
+  path: '/api/test/:id?', // optional / required / multi path params available @ routes & api endpoints
   async fn () {
     return { aloha: true }
   }
@@ -285,7 +290,7 @@ export const GET = new API({ // POST is also available
 
 
 
-### Cleanup 
+### 🧼 Cleanup 
 - Delete the `./src/routes/about.tsx` file
 - Delete the `./src/routes/index.tsx` file
 - Delete the `./src/components` folder
@@ -297,10 +302,24 @@ export const GET = new API({ // POST is also available
     - If multiple items relate put em in a folder in `./src`
     - So files in `./src/lib` and folders in `./src`
     - So then when you open `./src` you'll see all your stuff & head to the library for helpful unique items!
+    - & then from an import perspetive thanks to the alias we set above w/ vite & ts, `@src/`
+
+
+### 🚀 Deploy your app!
+- Cloudflare offers free global hosting!
+    - Create a GitHub account
+    - Push to a public or private repository
+    - Create a Cloudlfare account
+    - Navigate to `Workers & Pages`
+    - Add you Github account information
+    - Integration / Deploy complete, & now Cloudflare will auto deploy each time ya push to `main`!
+    - Now @ your live site, navigate to `/test` or `/api/test` 💛
+    - ![mokey engineers](https://image.cdn2.seaart.me/2025-04-15/cvv6ghte878c7399ns80-4/0d8c473e134e9c09bc0bac02511296c6_high.webp)
 
 
 
-### Create middleware
+
+### 🙏 Create middleware
 - In Solid Start, if a return is made in a middleware function, that return is given to the client as a response & if a return is not done, the api or route fn is called
 - Solid Fun provides a way to align w/ this functionality via the `b4` prop that is available when creating `API`'s and `Route`'s
 - To ensure `b4` async functions are called, the easieast option is w/ `getMiddleware()` and the most flexible option is with `onMiddlewareRequest()`. Here is an example of both @ `./src/lib/middleware.ts`:
@@ -331,8 +350,8 @@ export const GET = new API({ // POST is also available
           }
         })
         ```
-    - So either the `getMiddleware()` or the `onMiddlewareRequest()` option must be implemented to align Solid middleware w/ Solid Fun `b4()`
-    - 🚨 Important note: If returning from `onRequest` it must be a `Response` object. So if a redirect is desired use [Response.redirect](https://developer.mozilla.org/en-US/docs/Web/API/Response/redirect_static) or the solid js `redirect()` which does that for us or the Solid Fun `go()` which calls `redirect()` and provides intellisense!
+    - So either the `getMiddleware()` or the `onMiddlewareRequest()` option must be implemented to align Solid Start's middleware w/ Solid Fun's `b4()`
+    - 🚨 Important note: If returning from `onRequest`, that response must be a `Response` object. So if a redirect is desired use [Response.redirect](https://developer.mozilla.org/en-US/docs/Web/API/Response/redirect_static) or the Solid's `redirect()` which does that for us or the Solid Fun's `go()` which calls `redirect()` and provides intellisense!
     - If using the `onMiddlewareRequest()` option, some additional information should be known about SolidJS middleware so here is information about that:
         - [Middleware](https://docs.solidjs.com/solid-start/advanced/middleware)
         - [Create Middleware](https://docs.solidjs.com/solid-start/reference/server/create-middleware#createmiddleware)
@@ -353,9 +372,9 @@ export const GET = new API({ // POST is also available
           vite: {
             resolve: {
               alias: {
-                '@root': path.resolve(cwd),
-                '@lib': path.resolve(cwd, 'src/lib'),
+                '@src': path.resolve(cwd, 'src'),
                 '@solidfun': path.resolve(cwd, '.solidfun/fundamentals'),
+                'fun.config': path.resolve(cwd, './fun.config.js'),
               }
             }
           }
@@ -370,7 +389,7 @@ export const GET = new API({ // POST is also available
 
         export default new Route({
           path: '/',
-          async b4(): GoResponse {
+          async b4(): GoResponse { // `go()` requires knowledge of all routes, so calling `go()` in a route will cause a ts recursion loop w/o the `GoResponse` return type 🧚‍♀️
             return go('/test')
           }
         })
@@ -382,7 +401,7 @@ export const GET = new API({ // POST is also available
 
 
 
-### Create a Layout
+### 👩‍🎨 Create a Layout
 - For a group of routes, layouts allow us a way to:
     - Create html elements to wrap them
     - Import styling that they may all share
@@ -391,10 +410,10 @@ export const GET = new API({ // POST is also available
     ```css
     .guest { background-color: pink; }
     ```
-- @ `./src/app/Guest/Guest.Layout.tsx`
+- @ `./src/app/Guest/GuestLayout.tsx`
     ```tsx
-    import { Layout } from '@solidfun/layout'
     import './Guest.css' // when it comes to css, vite works best w/ relative import paths
+    import { Layout } from '@solidfun/layout'
 
 
     export default new Layout({
@@ -413,7 +432,7 @@ export const GET = new API({ // POST is also available
     import { A } from '@solidfun/a'
     import { Title } from '@solidjs/meta'
     import { Route } from '@solidfun/route'
-    import GuestLayout from './Guest.Layout'
+    import GuestLayout from './GuestLayout' // when file's share a common folder, relative paths are simple
 
 
     export default new Route({
@@ -433,7 +452,7 @@ export const GET = new API({ // POST is also available
     import { A } from '@solidfun/a'
     import { Title } from '@solidjs/meta'
     import { Route } from '@solidfun/route'
-    import GuestLayout from './Guest.Layout'
+    import GuestLayout from './GuestLayout'
 
 
     export default new Route({
@@ -448,8 +467,8 @@ export const GET = new API({ // POST is also available
       }
     })
     ```
-    - Restart the dev server (which updates the `<App />` component)
-    - Now that the `<App />` component knows about your new routes, w/ the `<A />` component feel free to delete the path and then while your insertion point is between the path `""` press *[control + space]* to get intellisense!
+    - Restart the dev server (which updates the `<App />` component), so now that the `<App />` component knows about your new routes!
+    - With the `<A />` component, feel free to delete the path and then while your insertion point is between the path `""` press *[control + space]* to get intellisense!
     - Navigate to http://localhost:3000/sign-in
     - Type into the layout input
     - Navigate between pages and notice how the layout did not re render b/c the input text remains! 🙌

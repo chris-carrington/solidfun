@@ -11,11 +11,13 @@ import { config, type SessionData } from 'fun.config'
 
 /** 
  * - `setSessionData()` sets `session.data[sessionDataKey]` to `sessionData`
- * - Thanks to Solid Start, all site accessors, have a browser cookie that has a key and value
- * - The cookie key is configured  @ `./fun.config.js` and the value is an encrypted & stringified object that Solid calls a session
+ * - Thanks to Solid Start, all site visitors, have a browser cookie that has a key and value
+ * - The cookie key is configured  @ `./fun.config.js` w/ the `cookieKey` prop and the value is a stringified and encrypted object that Solid Start calls a session
  * - `session.data` is an object that can hold whatever we want. @ `session.data[sessionDataKey]` we hold the sessionData
  * - The `SessionData` type is configured via JSDOC @ `./fun.config.js`
  * - & session data is added onto each request @ `onMiddlewareRequest()` 
+ * - The data you store in a session could be a `name` or `email`, we recommend an `id` or 2 and to get the rest of the data about a user from the database when verifying the session is also in the db
+ * - We recomend also storing a sessionId in the database so then if you'd ever love to sign anyone out, that can be done with a simple db update
  */
 export async function setSessionData(sessionData: SessionData): Promise<void> {
   await _setSessionData(await getSession(), sessionData)
@@ -53,9 +55,12 @@ export async function getSessionData(): Promise<null | SessionData> {
 
 /** 
  * - `clearSessionData()` sets `session.data[sessionDataKey]` to `null`
- * - Thanks to Solid Start, all site accessors, have a browser cookie that has a key and value
- * - The cookie key is configured  @ `./fun.config.js` and the value is an encrypted & stringified object that Solid calls a session
- * - `session.data` is an object that can hold whatever we want. @ `session.data[sessionDataKey]` we hold the sessionData & `clearSessionData()` sets this value to null
+ * - Thanks to Solid Start, all site visitors, have a browser cookie that has a key and value
+ * - The cookie key is configured  @ `./fun.config.js` w/ the `cookieKey` prop and the value is a stringified and encrypted object that Solid Start calls a session
+ * - `session.data` is an object that can hold whatever we want. @ `session.data[sessionDataKey]` we hold the sessionData
+ * - The `SessionData` type is configured via JSDOC @ `./fun.config.js`
+ * - The data you store in a session could be a `name` or `email`, we recommend an `id` or 2 and to get the rest of the data about a user from the database when verifying the session is also in the db
+ * - We recomend also storing a sessionId in the database so then if you'd ever love to sign anyone out, that can be done with a simple db update
  */
 export async function clearSessionData(): Promise<void> {
   await _setSessionData(await getSession(), null)

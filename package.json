@@ -5,15 +5,24 @@
   "version": "0.0.21",
   "types": "dist/index.d.ts",
   "author": "Christopher Carrington",
+  "homepage": "https://github.com/chris-carrington/solidfun#readme",
   "description": "Solid Fundamentals, that help create lovely web sites & mobile applications!",
+  "bin": {
+    "fun": "dist/src/cli/cli.js"
+  },
+  "bugs": {
+    "url": "https://github.com/chris-carrington/solidfun/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chris-carrington/solidfun.git"
+  },
   "scripts": {
     "prepublishOnly": "npm run build",
     "publish": "npm publish --access public",
     "build": "tsc -p tsconfig.srcBuild.json && node ./src/srcBuild.js",
-    "link": "npm unlink -g solidfun && npm link"
-  },
-  "bin": {
-    "fun": "dist/src/cli/cli.js"
+    "link": "npm unlink -g solidfun && npm link",
+    "unlink": "npm unlink -g solidfun"
   },
   "devDependencies": {
     "@solidjs/meta": "^0.29.4",

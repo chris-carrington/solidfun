@@ -1,3 +1,10 @@
 !dist/
-notes.md
+node_modules
 src
+.gitignore
+fun.config.js
+notes.md
+package-lock.json
+tsconfig.cliBuild.json
+tsconfig.json
+tsconfig.srcBuild.json

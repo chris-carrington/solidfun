@@ -33,6 +33,21 @@ export class Route<T extends RouteArgs = {}> {
    *     - Append values to response
    *     - Append values `event.locals`
    * - From an auth perspective, `this.b4()` is a great spot to do a 1st session data check, so `getSessionData()` and append it to`event.locals`. & then  `this.component()` is a great spot to do a 2nd more thorough session data check w/ db calls. This process is similair to the 2 steps movie theater ticket verification process
+   * - ✨ Note: If returning from `b4`, that response must be a `Response` object. So if a redirect is desired use [Response.redirect](https://developer.mozilla.org/en-US/docs/Web/API/Response/redirect_static) or the Solid's `redirect()` which does that for us or the Solid Fun's `go()` which calls `redirect()` and provides intellisense!
+   * - 🚨 Important note: If calling `go()` in `b4()` add a return type of `GoResponse` to `b4()`. `go()` requires knowledge of all routes, so calling `go()` in a route will cause a ts recursion loop w/o the return type, example:
+        ```ts
+        import { go } from '@solidfun/go'
+        import { Route } from '@solidfun/route'
+        import type { GoResponse } from '@solidfun/types'
+
+
+        export default new Route({
+          path: '/',
+          async b4(): GoResponse {
+            return go('/test')
+          }
+        })
+        ```
    */
   b4?: B4
 
@@ -79,6 +94,7 @@ export type RouteOptions = {
    *     - Append values to response
    *     - Append values `event.locals`
    * - From an auth perspective, `this.b4()` is a great spot to do a 1st session data check, so `getSessionData()` and append it to`event.locals`. & then  `this.component()` is a great spot to do a 2nd more thorough session data check w/ db calls. This process is similair to the 2 steps movie theater ticket verification process
+   * - 🚨 Important note: If returning from `b4`, that response must be a `Response` object. So if a redirect is desired use [Response.redirect](https://developer.mozilla.org/en-US/docs/Web/API/Response/redirect_static) or the Solid's `redirect()` which does that for us or the Solid Fun's `go()` which calls `redirect()` and provides intellisense!
    */
   b4?: B4,
 
