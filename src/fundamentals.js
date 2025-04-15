@@ -1,4 +1,5 @@
 // @ts-check
+// It is easiest for `fun build` to read js files, so that is why this is a js file
 
 
 /**
@@ -32,6 +33,7 @@ export const fundamentals = new Map([
   ['be', new Fundamental('ts', 'solid', 'copy')],
   ['beFetch', new Fundamental('ts', 'solid', 'copy')],
   ['carousel', new Fundamental('tsx', 'solid', 'copy')],
+  ['carousel.styles', new Fundamental('css', 'solid', 'copy')],
   ['beMessages', new Fundamental('ts', 'solid', 'helper')],
   ['buildURL', new Fundamental('ts', 'solid', 'helper')],
   ['clear', new Fundamental('ts', 'solid', 'copy')],
@@ -39,7 +41,7 @@ export const fundamentals = new Map([
   ['contextProvider', new Fundamental('tsx', 'solid', 'copy')],
   ['createOnSubmit', new Fundamental('ts', 'solid', 'copy')],
   ['dateTimeFormat', new Fundamental('tsx', 'solid', 'copy')],
-  ['env', new Fundamental('ts', 'solid', 'copy')],
+  ['env', new Fundamental('ts', 'solid', 'dynamic')],
   ['eventToPathname', new Fundamental('ts', 'solid', 'helper')],
   ['fe', new Fundamental('ts', 'solid', 'copy')],
   ['feContext', new Fundamental('tsx', 'solid', 'copy')],
@@ -48,7 +50,7 @@ export const fundamentals = new Map([
   ['getMiddleware', new Fundamental('ts', 'solid', 'copy')],
   ['go', new Fundamental('ts', 'solid', 'copy')],
   ['layout', new Fundamental('ts', 'solid', 'copy')],
-  ['layout', new Fundamental('ts', 'solid', 'copy')],
+  ['lorem', new Fundamental('ts', 'solid', 'copy')],
   ['messages', new Fundamental('tsx', 'solid', 'copy')],
   ['mongoConnect', new Fundamental('ts', 'mongoose', 'copy')],
   ['mongoModel', new Fundamental('ts', 'mongoose', 'copy')],

@@ -1,5 +1,5 @@
 # 🌟 Why Solid Fun?
-- 🌀 Fine grained reactivity
+- 🌀 Fine grained reactivity & suspense
 - ✅ Type-safe intellisense everywhere
 - ❤️ Secure, fast & simple fundamentals
 ![Kitty software developer](https://i.imgur.com/zcxCkJH.png)
@@ -55,6 +55,7 @@
     import { createOnSubmit } from '@solidfun/createOnSubmit' // lovely form api calls
     import { DateTimeFormat } from '@solidfun/dateTimeFormat'
     import { ContextProvider } from '@solidfun/contextProvider'
+    import { loremWords, loremParagraphs } from '@solidfun/lorem'
     import { MongoModel, InferMongoModel } from '@solidfun/mongoModel' // additional mongo db intellisense
     import { onMiddlewareRequest } from '@solidfun/onMiddlewareRequest'
     import { beFetch, beGET, bePOST, beParse } from '@solidfun/beFetch' // query api's during render, stream dynamic data when ready & use typed data in components ✨
@@ -308,7 +309,8 @@ export const GET = new API({ // POST is also available
 ### 🚀 Deploy your app!
 - Cloudflare offers free global hosting!
     - Create a GitHub account
-    - Push to a public or private repository
+    - Push to a public or private repository, full transparency:
+        - We ***do not*** recommend adding `.solidfun` to your `.gitignore`. This way no build step is required in the cloud and you get to see exactly what's updated on each release!
     - Create a Cloudlfare account
     - Navigate to `Workers & Pages`
     - Add you Github account information

@@ -1,5 +1,6 @@
 /**
  * 🧚‍♀️ How to access:
+ *     - import '@solidfun/carousel.styles.css'
  *     - import { Carousel } from '@solidfun/carousel'
  */
 
@@ -15,7 +16,7 @@ import type { JSX } from 'solid-js'
  * - B/c of how solid jsx works, this component will not work correclty if `items` or its child items are the same and just referenced, the items must be different, which is typical from a db, but not in testing, so for testing use an array where each item is unique and not just a reference to the same item and all will work gr8, as seen in the example below 🙌
  * - Example `.css`: 
  *     - `.carousel { width: 150px; }`
- *     - `.carousel .loops { animation-duration: 15s; }`
+ *     - `.carousel .loops { animation-duration: 15s !important; }`
  *     - `.carousel .loops .goal { width: 90px; margin-right: 18px; }`
  * - Example `.tsx` 🥳
       ```tsx
