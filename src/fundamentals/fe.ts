@@ -8,7 +8,7 @@ import { feFetch } from '../feFetch'
 import { buildURL } from '../buildURL'
 import { FE_Messages } from '../feMessages'
 import { createSignal, type Signal } from 'solid-js'
-import type { GET_Paths, GET_Params, POST_Paths, POST_Body, POST_Params } from './types'
+import type { GET_Paths, InferGETParams, POST_Paths, InferPOSTBody, InferPOSTParams, InferGETResponse } from './types'
 
 
 /** 
@@ -40,12 +40,12 @@ export class FE {
   }
 
 
-  async GET<T extends GET_Paths>(path: T, options?: { params?: GET_Params<T>, loadKey?: string }) {
+  async GET<T extends GET_Paths>(path: T, options?: { params?: InferGETParams<T>, loadKey?: string }): Promise<InferGETResponse<T>> {
     return this.#fetch(buildURL(path, options?.params), {method: 'GET', loadKey: options?.loadKey })
   }
 
 
-  async POST<T extends POST_Paths>(path: T, options?: { params?: POST_Params<T>, body?: POST_Body<T>, loadKey?: string }) {
+  async POST<T extends POST_Paths>(path: T, options?: { params?: InferPOSTParams<T>, body?: InferPOSTBody<T>, loadKey?: string }) {
     return this.#fetch(buildURL(path, options?.params), {method: 'POST', loadKey: options?.loadKey, body: options?.body })
   }
 

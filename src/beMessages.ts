@@ -1,12 +1,14 @@
 import { DEFAULT_MESSAGE_NAME } from './fundamentals/vars'
-import type { BE_Messages_Response } from './fundamentals/types'
+import type { JSONResponseMessages } from './fundamentals/types'
 
 
 /**
- * On the BE messages are: `Record<string, string[]>`
+ * - In `valibot` / `zod`, messages are `[string, string[]][]`
+ * - On the `BE` messages are: `Map<string, string[]>`
+ * - On the `FE` messages are: `Map<string, Signal<string[]>>`
  */
 export class BE_Messages {
-  messages: BE_Messages_Response
+  messages: JSONResponseMessages
 
 
   constructor() {
@@ -14,16 +16,12 @@ export class BE_Messages {
   }
 
 
-  catch(e: any) {
-    if (typeof e === 'string') this.push(e)
-    else if (typeof e?.message === 'string') this.push(e.message)
-    else this.push('An error has occurred')
-  }
-
-
   push(message: string, name: string = DEFAULT_MESSAGE_NAME) {
-    if (!this.messages[name]) this.messages[name] = []
-    this.messages[name].push(message)
+    const current = this.messages[name] || []
+
+    current.push(message)
+
+    this.messages[name] = current
   }
 
 
@@ -33,6 +31,6 @@ export class BE_Messages {
 
 
   has() {
-    return Boolean(Object.keys(this.messages).length > 0)
+    return Boolean(Object.keys(this.messages).length)
   }
 }

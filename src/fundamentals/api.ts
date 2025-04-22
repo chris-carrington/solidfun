@@ -1,23 +1,19 @@
 /**
  * 🧚‍♀️ How to access:
  *     - import { API } from '@solidfun/api'
- *     - import type { APIArgs, APIOptions, APIFn, APIFnArgs } from '@solidfun/api'
+ *     - import type { APIOptions } from '@solidfun/api'
  */
 
 
-import type { BE } from './be'
+
+import { BE } from './be'
 import type { B4, APIEvent } from './types'
 import { pathnameToPattern } from './pathnameToPattern'
 
 
-export type APIArgs = {
-  Body?: any
-  Params?: any
-  Search?: any
-}
 
-
-export class API<T extends APIArgs = {}, fnResponse = unknown>  {
+/** - Create a GET or POST, API endpoint */
+export class API<T_Args extends APIArgs = {}, T_Fn_Response = unknown> {
   /** 
    * - IF `b4()` return is truthy => returned value is sent to the client & route handler is not processed
    * - It is not recomended to do db calls in this function
@@ -29,25 +25,52 @@ export class API<T extends APIArgs = {}, fnResponse = unknown>  {
   path: string
 
   /** The fn to be done on GET, POST, PUT or DELETE  */
-  fn?: APIFn<fnResponse>
-
-  /** Helpful for gen file */
-  name?: string
+  fn?: APIFn<T_Fn_Response>
 
   /** Turns url parameters (:param and :param?) into regex patterns to match path's */
   pattern: RegExp
 
-  constructor(options: APIOptions<fnResponse>) {
+  constructor(options: APIOptions<T_Fn_Response>){
     this.b4 = options.b4
     this.path = options.path
     this.fn = options.fn
     this.pattern = options.pattern || pathnameToPattern(options.path)
   }
+
+
+  /**
+   * - Add to API, updated type info:
+   *     - `Omit<T_Args, 'Body'>`:Omit from `T_Args` the existing `Body` type 
+   *     - `& { Body: T_Body }`:  Add to `T_Args` a new `Body` type
+   */
+  body<T_Body>(): API<Omit<T_Args, 'Body'> & { Body: T_Body }, T_Fn_Response> {
+    return this
+  }
+
+
+  /**
+   * - Add to API, updated type info:
+   *     - `Omit<T_Args, 'Search'>`: Omit from `T_Args` the existing `Search` type 
+   *     - `& { Search: T_Search }`: Add to `T_Args` a new `Search` type
+   */
+  search<T_Search>(): API<Omit<T_Args, 'Search'> & { Search: T_Search }, T_Fn_Response> {
+    return this
+  }
+
+
+  /**
+   * - Add to API, updated type info:
+   *     - `Omit<T_Args, 'Params'>`: Omit from `T_Args` the existing `Params` type 
+   *     - `& { Params: T_Params }`: Add to `T_Args` a new `Params` type
+   */
+  params<T_Params>(): API<Omit<T_Args, 'Params'> & { Params: T_Params }, T_Fn_Response> {
+    return this
+  }
 }
 
 
 
-export type APIOptions<fnResponse> = {
+export type APIOptions<T_Fn_Response> = {
   /** 
    * - IF `b4()` return is truthy => returned value is sent to the client & route handler is not processed
    * - It is not recomended to do db calls in this function
@@ -62,11 +85,15 @@ export type APIOptions<fnResponse> = {
   pattern?: RegExp
 
   /** The fn to be done on GET, POST, PUT or DELETE  */
-  fn?: APIFn<fnResponse>
+  fn?: APIFn<T_Fn_Response>
 }
 
 
-export type APIFn<fnResponse> = (args: APIFnArgs) => Promise<fnResponse>
+type APIFn<T_Fn_Response> = ({ be, event, params }: { be: BE, event:APIEvent, params: Record<string, string | undefined> }) => Promise<T_Fn_Response>
 
 
-export type APIFnArgs = { be: BE, event: APIEvent }
+type APIArgs<Body = unknown, Search = unknown, Params = unknown> = {
+  Body?: Body
+  Search?: Search
+  Params?: Params
+}

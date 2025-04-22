@@ -5,7 +5,7 @@
 
 
 import { buildURL } from '../buildURL'
-import type { Routes, Route_Params, GET_Paths, GET_Params, POST_Paths, POST_Params } from './types'
+import type { Routes, Route_Params, GET_Paths, InferGETParams, POST_Paths, InferPOSTParams } from './types'
 
 
 /**
@@ -23,7 +23,7 @@ export const createRouteUrl = <T extends Routes>(path: T, params?: Route_Params<
  * @param params Object w/ keys from `path` & custom values, that when defined, get be placed into the `path`
  * @returns URL api GET string, w/o the env build url addded to the beginning
  */
-export const createApiGetUrl = <T extends GET_Paths>(path: T, params?: GET_Params<T>): string => buildURL(path, params)
+export const createApiGetUrl = <T extends GET_Paths>(path: T, params?: InferGETParams<T>): string => buildURL(path, params)
 
 
 /**
@@ -32,4 +32,4 @@ export const createApiGetUrl = <T extends GET_Paths>(path: T, params?: GET_Param
  * @param params Object w/ keys from `path` & custom values, that when defined, get be placed into the `path`
  * @returns URL api POST string, w/o the env build url addded to the beginning
  */
-export const creatApiPostUrl = <T extends POST_Paths>(path: T, params?: POST_Params<T>): string => buildURL(path, params)
+export const creatApiPostUrl = <T extends POST_Paths>(path: T, params?: InferPOSTParams<T>): string => buildURL(path, params)

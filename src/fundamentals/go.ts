@@ -6,7 +6,7 @@
 
 import { buildURL } from '../buildURL'
 import { redirect } from '@solidjs/router'
-import type { Routes, Route_Params } from './types'
+import type { Routes, Route_Params, GoResponse } from './types'
 
 
 
@@ -14,4 +14,4 @@ import type { Routes, Route_Params } from './types'
  * - Wraps "@solidjs/router" `redirect()`
  * - Provides intellisense to current routes
  */
-export const go = <T extends Routes>(path: T, params?: Route_Params<T>) => redirect(buildURL(path, params))
+export const go = <T extends Routes>(path: T, params?: Route_Params<T>): GoResponse => redirect(buildURL(path, params))

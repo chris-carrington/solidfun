@@ -38,7 +38,7 @@ export function loremWords(count: number) {
  */
 export function loremParagraphs(count?: 1 | 2 | 3) {
   if (count !== 1 && count !== 2 && count !== 3) count = 1
-console.log('loremParagraphs count', count)
+
   switch (count) {
     case 1: return getParagraph(0, p1Length)
     case 2: return getParagraph(0, p1Length) + space + getParagraph(p1Length, p1Length + p2Length)

@@ -6,12 +6,30 @@
 
 /**
  * - Replaces route parameters (:param and :param?) in a pathname w/ regex patterns
- * - Help determines what routes or api's to access
+ * - Regex helps match a server request url w/ a route or api
+ * - Regex also helps us know what param values are in a url 🙌
  */
 export function pathnameToPattern(pathname: string): RegExp {
-  const regexString = pathname
-    .replace(/\/:\w+\?/g, '(?:/([^/]+))?') // Handle optional params
-    .replace(/:\w+/g, '([^/]+)'); // Handle required params
+  /**
+   * - From `"/api/character/:name/:id?"` => `["api","character",":name",":id?"]`
+   * - From `":name"` => `/(?<name>[^/]+)`
+   * - From `":id?"` => `(?:/(?<id>[^/]+))?`
+   */
+  const segments = pathname.split('/').filter(Boolean)
 
-  return new RegExp(`^${regexString}$`);
+  const regexBody = segments // 2. build regex w/ named capture groups for every :param
+    .map(s => {
+      if (!s.startsWith(':')) return `/${s}` // literal
+
+      const isOptional = s.endsWith('?')
+      const name = s.slice(1, isOptional ? -1 : undefined)
+      const capture = `(?<${name}>[^/]+)`
+
+      return isOptional
+        ? `(?:/${capture})?`   // wrap slash+capture as optional
+        : `/${capture}`
+    })
+    .join('') // array to string
+
+  return new RegExp(`^${regexBody}/?$`) // allow an optional trailing slash, anchor start/end
 }

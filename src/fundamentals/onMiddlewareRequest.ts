@@ -9,10 +9,10 @@ import { API } from './api'
 import { routes } from './app'
 import { Route } from './route'
 import { gets, posts } from './apis'
-import { getSessionData } from './session'
 import type { FetchEvent } from './types'
+import { getSessionData } from './session'
 import { eventToPathname } from '../eventToPathname'
-import { pathnameToRoute } from '../pathnameToRoute'
+import { pathnameToMatch, type RouteMatch } from '../pathnameToMatch'
 
 
 /**
@@ -42,9 +42,9 @@ export async function onMiddlewareRequest(event: FetchEvent) {
      switch(event.request.method) {
        case 'POST': return await onIsRequestingAnAPI(event, pathname, posts)
        case 'GET':
-         const route = pathnameToRoute(pathname, routes)
+         const routeMatch = pathnameToMatch(pathname, routes)
  
-         if (route instanceof Route) return await onRouteOrAPIMatched(event, route)
+         if (routeMatch?.handler instanceof Route) return await onRouteOrAPIMatched(event, routeMatch)
          else return await onIsRequestingAnAPI(event, pathname, gets)
      }
    } catch (e) {
@@ -53,13 +53,16 @@ export async function onMiddlewareRequest(event: FetchEvent) {
  }
  
  
- async function onRouteOrAPIMatched(event: FetchEvent, item: API | Route) {
-  if (item.b4) return await item.b4(event)
+ async function onRouteOrAPIMatched<T extends API | Route>(event: FetchEvent, routeMatch: RouteMatch<T>) {
+  if (routeMatch.handler.b4) return await routeMatch.handler.b4(event)
  }
  
  
  async function onIsRequestingAnAPI(event: FetchEvent, pathname: string, apis: Record<string, API | Route>) {
-   const api = pathnameToRoute(pathname, apis)
-   if (api instanceof API) return await onRouteOrAPIMatched(event, api)
+   const routeMatch = pathnameToMatch(pathname, apis)
+
+   if (routeMatch?.handler instanceof API) {
+    return await onRouteOrAPIMatched(event, routeMatch)
+   }
  }
  

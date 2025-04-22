@@ -216,7 +216,7 @@ export default new Route({
 
 ### Bind `<App />` component
 ```tsx
-import './app.css' // vite css relative paths = best
+import './app.css' // w/ vite css, relative paths is best
 import { App } from '@solidfun/app'
 
 export default () => <App /> // in your editor command click the <App /> component, if wondering where are the routes, "fun build local" 🧚‍♀️
@@ -254,7 +254,7 @@ export async function POST(event: APIEvent) {
 ### 😎 Create an api endpoint
 - @ `./src/api/test.ts`
 ```tsx
-import { API } from '@solidfun'
+import { API } from '@solidfun/api'
 
 
 export const GET = new API({ // POST is also available
@@ -357,7 +357,7 @@ export const GET = new API({ // POST is also available
     - If using the `onMiddlewareRequest()` option, some additional information should be known about SolidJS middleware so here is information about that:
         - [Middleware](https://docs.solidjs.com/solid-start/advanced/middleware)
         - [Create Middleware](https://docs.solidjs.com/solid-start/reference/server/create-middleware#createmiddleware)
-    ![snow](https://image.cdn2.seaart.me/2025-04-08/cvqcrgle878c73dnstc0-1/fe4b1143be1635a95c0a23ecefa797db_high.webp)
+    ![snow](https://image.cdn2.seaart.me/2025-04-16/cvvemrde878c73a9lt80-4/9e2c550a0949dad1cfa35586ad0d5786_high.webp)
     - 🚨 Important last Step! @ `./app.config.ts`, tell Solid where the middleware file is, with something like: `middleware: './src/lib/middleware.ts'`
     - Full app config w/ middleware example:
         ```ts

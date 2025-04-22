@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import dotenv from 'dotenv'
-import { cliBuild } from './cliBuild.js' // .js extension required b/c this is cli / dist / node, land
+import { cliBuild } from './build/build.js' // .js extension required b/c this is cli / dist / node, land
 
 try {  
   const cwd = process.cwd()

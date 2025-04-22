@@ -5,10 +5,17 @@
  */
 
 
+import { BE_Error } from '../beError'
+import type { JSONResponseMessages } from './types'
 import { flatten, safeParse, type BaseSchema, type InferOutput } from 'valibot'
 
 
-/** `Valibot` parses & validates data and `ValibotSchema` standardizes parsing w/ `this.parse()` & type inference w/ `InferValibotSchema`  */
+
+/**
+ * - Ensures that we validate an entire schema before thowing
+ * - When we throw, the error is formatted as a `BE_Error`, aka same shape as all errors we throw and potentially your data too if using `be.json()`
+ * - Comes w/ a convenience InferValibotSchema
+ */
 export class ValibotSchema<T extends BaseSchema<any, any, any>> {
   schema: T;
 
@@ -19,7 +26,7 @@ export class ValibotSchema<T extends BaseSchema<any, any, any>> {
   /**
    * 1. Validbot safe parse an entire input
    * - On Success: Return parsed
-   * - On Fail: Throw flattened errors
+   * - On Fail: Throw BE_Error w/ flattened errors
    * @param input - Input to parse
    * @param schema - Schema the input should look like
    * @returns - Parsed output or throws an error if any issues
@@ -27,18 +34,31 @@ export class ValibotSchema<T extends BaseSchema<any, any, any>> {
   parse(input: AnyValue<InferOutput<T>>): InferOutput<T> {
     const result = safeParse(this.schema, input)
 
-    if (result.issues) throw flatten(result.issues)
+    if (!result.issues) return result.output
+    else {
+      const res: Record<string, string[]> = {} // obj data structure b/c it's what valibot already knows & works over the wire to the fe
+      const nested = flatten(result.issues).nested
 
-    return result.output
+      for (const key in nested) {
+        if (Array.isArray(nested[key as keyof typeof nested])) {
+          res[key] = nested[key as keyof typeof nested] as string[] // all these type asertions are of things we learn on the previous line but ts forgets
+        }
+      }
+
+      const messages: JSONResponseMessages = res
+      throw new BE_Error({ messages })
+    }
   }
 }
 
 
 /**
- * - Takes a fun ValibotSchema and infers the type of that schema
- * - IF "T" is a ValibotSchema THEN Set "S" to "T" and then respond with v.InferOutput<S>
+ * - Recieves: Fun ValibotSchema 
+ * - Gives: The type of that schema / shape
  */
-export type InferValibotSchema<T> = T extends ValibotSchema<infer S> ? InferOutput<S> : never
+export type InferValibotSchema<T_ValibotSchema> = T_ValibotSchema extends ValibotSchema<infer T_Shape>
+  ? InferOutput<T_Shape>
+  : never
 
 
 /**

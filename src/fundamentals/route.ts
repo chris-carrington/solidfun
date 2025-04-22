@@ -1,28 +1,22 @@
 /**
  * 🧚‍♀️ How to access:
  *     - import { Route } from '@solidfun/route'
- *     - import type { RouteArgs, RouteOptions, RouteFilters } from '@solidfun/route'
+ *     - import type { RouteOptions } from '@solidfun/route'
  */
 
 
-import type { B4 } from './types'
 import type { JSX } from 'solid-js'
 import type { Layout } from './layout'
-import type { RouteComponentArgs } from './app'
+import type { B4, RouteProps } from './types'
 import { pathnameToPattern } from './pathnameToPattern'
 
-
-export type RouteArgs = {
-  Params?: any
-  Search?: any
-}
 
 
 /**
  * - Create a route for your application
  * - Behind the scenes will use this information to create SolidJS Route components: https://docs.solidjs.com/solid-router/concepts/nesting
  */
-export class Route<T extends RouteArgs = {}> {
+export class Route<T_Args extends RouteArgs = {}> {
   /** 
    * - IF `this.b4()` return is truthy => returned value is sent to the client & `this.component()` is not called
    * - It is not recomended to do db calls in `this.b4()`
@@ -51,8 +45,11 @@ export class Route<T extends RouteArgs = {}> {
    */
   b4?: B4
 
-  /** Group funcitionality, context & styling */
-  layout?: Layout
+  /** 
+   * - Group funcitionality, context & styling
+   * - The first layout provided will wrap all the remaining layouts & the current route
+   */
+  layouts?: Layout[]
 
   /** url path */
   path: string
@@ -61,10 +58,10 @@ export class Route<T extends RouteArgs = {}> {
   pattern: RegExp
 
   /** 
-   * - If fetching data is necessary see: `beFetch()`
+   * - If fetching data is necessary see: `beAsync()`
    * - If form submission is necessary see: `createOnSubmit()`
    */
-  component?: (args: RouteComponentArgs) => JSX.Element
+  component?: (args: RouteProps) => JSX.Element
 
   /**
    * - https://docs.solidjs.com/solid-router/concepts/path-parameters
@@ -75,10 +72,30 @@ export class Route<T extends RouteArgs = {}> {
   constructor(options: RouteOptions) {
     this.b4 = options.b4
     this.path = options.path
-    this.layout = options.layout
+    this.layouts = options.layouts
     this.filters = options.filters
     this.component = options.component
     this.pattern = options.pattern || pathnameToPattern(options.path)
+  }
+
+
+  /**
+   * - Add to Route, updated type info:
+   *     - `Omit<T_Args, 'Search'>`: Omit from `T_Args` the existing `Search` type 
+   *     - `& { Search: T_Search }`: Add to `T_Args` a new `Search` type
+   */
+  search<T_Search>(): Route<Omit<T_Args, 'Search'> & { Search: T_Search }> {
+    return this
+  }
+
+
+  /**
+   * - Add to Route, updated type info:
+   *     - `Omit<T_Args, 'Params'>`: Omit from `T_Args` the existing `Params` type 
+   *     - `& { Params: T_Params }`: Add to `T_Args` a new `Params` type
+   */
+  params<T_Params>(): Route<Omit<T_Args, 'Params'> & { Params: T_Params }> {
+    return this
   }
 }
 
@@ -98,8 +115,11 @@ export type RouteOptions = {
    */
   b4?: B4,
 
-  /** Group funcitionality, context & styling */
-  layout?: Layout,
+  /** 
+   * - Group funcitionality, context & styling
+   * - The first layout provided will wrap all the remaining layouts & the current route
+   */
+  layouts?: Layout[]
 
   /** url path */
   path: string
@@ -108,10 +128,10 @@ export type RouteOptions = {
   pattern?: RegExp
 
   /** 
-   * - If fetching data is necessary see: `beFetch()`
+   * - If fetching data is necessary see: `beAsync()`
    * - If form submission is necessary see: `createOnSubmit()`
    */
-  component?: (args: RouteComponentArgs) => JSX.Element
+  component?: (props: RouteProps) => JSX.Element
 
   /**
    * - https://docs.solidjs.com/solid-router/concepts/path-parameters
@@ -121,8 +141,15 @@ export type RouteOptions = {
 }
 
 
+
+type RouteArgs<Search = unknown, Params = unknown> = {
+  Params?: Params
+  Search?: Search
+}
+
+
 /**
  * - https://docs.solidjs.com/solid-router/concepts/path-parameters
  * - If filter match is falsy => application renders `./src/routes/[...404].tsx`
  */
-export type RouteFilters = Record<string, any>
+type RouteFilters = Record<string, any>

@@ -2,7 +2,10 @@ import { API } from './api'
 
 
 export const gets = {
-  '/api/get/a': new API({ path: '/api/get/a' }),
+  '/api/get/a': new API({
+    path: '/api/get/a',
+    fn: async () => { return { a: true } }
+  }),
   '/api/get/b': new API({ path: '/api/get/b' }),
 }
 

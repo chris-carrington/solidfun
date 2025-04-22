@@ -30,6 +30,6 @@ try {
   await Promise.all(promises)
 
   console.log('✅ Built Solid Fun!')
-} catch (e) {
-  console.error('❌ srcBuild:', e)
+} catch (error) {
+  console.error('❌ srcBuild:', error)
 }

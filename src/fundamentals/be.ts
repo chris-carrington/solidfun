@@ -5,7 +5,7 @@
 
 
 import { BE_Messages } from '../beMessages'
-import type { MessagesResponse, DataMessagesResponse, JSONResponse, VoidResponse } from './types'
+import type { JSON_Response } from './types'
 
 
 
@@ -25,39 +25,25 @@ export class BE {
   }
 
 
-  /** Send errors to messages catch and respond */
-  catch (e: any) {
-    this.messages.catch(e)
-    return this.res(null) as MessagesResponse
-  }
-
-
   /**
-   * Respond with some json data
-   * If you'd love to send additional w/ the response like a redirect or messages call this.res()
+   * - Whenever there is a random error on the serer Solid Fun will respond w/ an error in this shape
+   * - So if you'd love a common shape between data & errors use this function
+   * - & then you could do things in templates like: `{ res()?.error?.message || res()?.data?.character }`
+   * - 🚨 If any messages have been pushed to be.messages, they will appear @ res.error.messages when calling this function
+   * @param data - The data to respond w/
+   * @returns An object that has `{ data }` and also too some errors or messages
    */
-  json<T>(value: T) {
-    return this.res(value) as JSONResponse<T>
-  }
+  json<T>(data: T): JSON_Response<T> {
+    let res = {}
 
-
-  /**
-   * Respond to the user
-   * @param data The data we'd like to respond with
-   * @returns Also adds any redirect or messages
-   */
-  res<T>(data: T) {
-    let res
-
-    // all
-    if (data && this.messages.has()) res = { data, messages: this.messages.get() } as DataMessagesResponse<T>
-
-    // singles
-    else if (data) res = { data } as JSONResponse<T>
-    else if (this.messages.has()) res = { messages: this.messages.get()} as MessagesResponse
-
-    // void
-    else if (!res) res = {} as VoidResponse
+    if (data && this.messages.has()) { // data & messages
+      res = {
+        data,
+        error: { messages: this.messages.get() }
+      }
+    } 
+    else if (data) res = { data } // just data
+    else if (this.messages.has()) res = { messages: this.messages.get() } // just messages
 
     return res
   }
