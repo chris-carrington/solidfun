@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "author": "Christopher Carrington",
   "homepage": "https://github.com/chris-carrington/solidfun#readme",
-  "description": "Solid Fundamentals, that help create lovely web sites & mobile applications!",
+  "description": "Solid Fundamentals... That help create lovely web sites & mobile applications!",
   "bin": {
     "fun": "dist/src/cli/cli.js"
   },
