@@ -4,15 +4,26 @@
  */
 
 
-import { FE } from './fe'
+import { FE_Context } from './feContext'
+import { Show, useContext, type JSX } from 'solid-js'
 
 
-export const Submit = ({ fe, label, loadKey }: { fe: FE, label: string, loadKey: string }) => {
-  return <button class="btn" type="submit" disabled={ fe.isLoading(loadKey) }>
-    {
-      fe.isLoading(loadKey)
-        ? <span class="load"></span>
-        : label 
-    }
-  </button>
+/**
+ * - Button w/ type `"submit"`
+ * - Hides `label` and shows `<span class="load"></span>` when `fe.bits.isOn(bitKey)` is `true` ✅
+ * - For load styles `import '@solidfun/loadSpin.styles.css'` or style it however ya love!
+ * @param label - To show in the button
+ * @param bitKey - Bits have a signal to determine if they are `1` or `0` and a `bitKey` to identify them w/in a `Map`
+ * @param ...props - All additional props are placed onto the `<button>`
+ */
+export const Submit = ({ label, bitKey, ...props }: { label: string, bitKey: string } & JSX.HTMLAttributes<HTMLButtonElement>) => {
+  const fe = useContext(FE_Context)
+
+  return <>
+    <button {...props} type="submit" disabled={fe.bits.isOn(bitKey)}>
+      <Show when={fe.bits.isOn(bitKey)} fallback={label}>
+        <span class="load"></span>
+      </Show>
+    </button>
+  </>
 }

@@ -8,7 +8,7 @@
 import { type JSX } from 'solid-js'
 import { buildURL } from '../buildURL'
 import { A as SolidA } from '@solidjs/router'
-import type { Routes, Route_Params } from './types'
+import type { Routes, InferRouteParams } from './types'
 
 
 export function A<T extends Routes>({ path, params, children, ...props }: AOptions<T>) {
@@ -23,7 +23,7 @@ export function A<T extends Routes>({ path, params, children, ...props }: AOptio
 export type AOptions<T extends Routes> = {
   path: T,
   children: JSX.Element,
-  params?: Route_Params<T>,
+  params?: InferRouteParams<T>,
 } & SolidAProps
 
 

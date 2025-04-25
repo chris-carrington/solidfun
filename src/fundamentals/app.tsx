@@ -6,11 +6,11 @@
   
   
 import { Layout } from './layout'
-import type { LayoutProps, RouteProps } from './types'
 import { Route as FunRoute } from './route'
 import { MetaProvider } from '@solidjs/meta'
 import { FileRoutes } from '@solidjs/start/router'
-import { useContext, Suspense, type JSX } from 'solid-js'
+import type { RouteProps, LayoutProps } from './types'
+import { useContext, Suspense, type JSX, onMount } from 'solid-js'
 import { FE_Context, FE_ContextProvider } from './feContext'
 import { Route, Router, type RouteSectionProps } from '@solidjs/router'
 
@@ -71,7 +71,6 @@ function rc(props: RouteSectionProps, route: FunRoute) {
 
   if (route instanceof FunRoute && route.component) {
     const fe = useContext(FE_Context)
-    fe.messages.clearAll() // on boot route -> fresh messages
     const _props: RouteProps = { fe, location: props.location, data: props.data, params: props.params } // route don't have children including is confusing
     res = route.component(_props)
   }

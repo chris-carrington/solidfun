@@ -24,7 +24,7 @@ export function clear(el: HTMLInputElement, value: () => Value) {
   function onInput () {
     if (readyToClear) {
       readyToClear = false
-      fe.messages.set([], el.name)
+      fe.messages.set({ name: el.name, value: [] })
     }
   }
 

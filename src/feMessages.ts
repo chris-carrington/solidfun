@@ -3,28 +3,31 @@ import { DEFAULT_MESSAGE_NAME } from './fundamentals/vars'
 
 
 /**
- * - In `valibot` / `zod`, messages are `[string, string[]][]`
- * - On the `BE` messages are: `Map<string, string[]>`
- * - On the `FE` messages are: `Map<string, Signal<string[]>>`
+ * - String Array Signal Management! 👷‍♀️
+ *     - In `valibot` / `zod`, messages are `Record<string, string[]>`
+ *     - On the `BE` messages are: `Record<string, string[]>`
+ *     - On the `FE` messages are: `Map<string, Signal<string[]>>`
  */
 export class FE_Messages {
-  messages: Map<string, Signal<string[]>>
-
-
-  constructor() {
-    this.messages = new Map()
-  }
+  #messages: Map<string, Signal<string[]>> = new Map()
 
 
   /**
-   * @param value - If array => set, if a string => set, If wanna push call `this.push()`
+   * @param value - Value to set onto
    * @param name - Messages are grouped by name
    * @param clearOnSubmit - If on form submit should this signal reset, default to true
    */
-  set({ name, value = DEFAULT_MESSAGE_NAME }: { value: string | string[], name: string }): string[] {
-    const [current, setCurrent] = this.messages.get(name) || createSignal<string[]>([])
-    setCurrent(Array.isArray(value) ? value : [value])
-    return current()
+  set({ name, value = DEFAULT_MESSAGE_NAME }: { value: string | string[], name: string }): Signal<string[]> {
+    let signal$ = this.#messages.get(name)
+    const v = Array.isArray(value) ? value : [value]
+
+    if (signal$) signal$[1](v)
+    else {
+      signal$ = createSignal(v)
+      this.#messages.set(name, signal$)
+    }
+
+    return signal$
   }
   
 
@@ -33,21 +36,21 @@ export class FE_Messages {
    * If the signal has not been gotten yet, set it, this way no matter if the set or get happens first the signal will render
    * @param name - Messages are grouped by name
    */
-  get(name: string = DEFAULT_MESSAGE_NAME): string[] {
-    const current$ = this.messages.get(name)
-    return (current$) ? current$[0]() : this.clear(name)
+  get(name: string = DEFAULT_MESSAGE_NAME): Signal<string[]> {
+    const current$ = this.#messages.get(name)
+    return (current$) ? current$ : this.clear(name)
   }
 
 
   /**
-   * @param value - If array => push, if a string => push, If wanna set call `this.set()`
+   * @param value - If `value` is an array => concat `value` w/ `#messages`, if `value` is a `string` => push `value` onto `#messages`
    * @param name - Messages are grouped by name
    */
   push({ name, value = DEFAULT_MESSAGE_NAME }: { value: string | string[], name: string }): void {
-    const current = this.get(name)
+    const [current, setCurent] = this.get(name)
 
-    if (Array.isArray(value)) this.set({ name, value: current.concat(value) })
-    else current.push(value)
+    if (Array.isArray(value)) setCurent(current().concat(value))
+    else setCurent([ ...current(), value ])
   }
 
 
@@ -56,31 +59,41 @@ export class FE_Messages {
    * - Clear messages at one name
    * - May also be used to init messages at a name
    */
-  clear(name: string): string[] {
+  clear(name: string): Signal<string[]> {
     return this.set({ name, value: [] })
   }
 
 
   /** Clear all messages */
   clearAll() {
-    for (const name in this.messages) {
+    for (const name in this.#messages) {
       this.clear(name)
     }
   }
 
 
   /**
-   * Align response messages with signals
-   * @param res - Response from server
+   * - Align `res.messages` with signals (from)
+   * - Align `res.message` with signals (from `feFetch()`)
+   * @param res - Response from server of type `JSON_Response` or atleast has a `Record<string, string[]>` @ `res.error.messages`
    */
-  catch(res: any) {
-    if (res && res?.error && Array.isArray(res.error?.messages)) {
-      for (const name of res.error?.messages) { // messages are grouped by name
-        const current$ = this.messages.get(name)
+  align(res: any) {
+    // res.messages
+    if (res && res?.messages && typeof res.messages === 'object') {
+      for (const name in res.messages) { // messages are grouped by name
+        const signal$ = this.#messages.get(name)
 
-        if (current$) current$[1](res.error?.messages[name]) // call setter
-        else this.messages.set(name, createSignal(res.error?.messages[name])) // create new signal
+        if (signal$) signal$[1](res.messages[name]) // call setter
+        else this.set({ name, value: res.messages[name] })
       }
+    }
+
+    // res.message
+    if (res && res?.message && typeof res.message == 'string') {
+      const signal$ = this.#messages.get(DEFAULT_MESSAGE_NAME)
+
+      if (signal$) signal$[1]([res.message]) // call setter
+      else this.set({ name: DEFAULT_MESSAGE_NAME, value: res.message })
     }
   }
 }
