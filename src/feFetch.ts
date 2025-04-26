@@ -1,4 +1,4 @@
-import { BE_Error } from './beError'
+import { FunError } from './funError'
 
 /**
  * - Do a fetch call on the fe
@@ -32,14 +32,14 @@ export async function feFetch(url: string, method: 'GET' | 'POST' = 'GET', body?
     if (response.headers.get('content-type')?.includes('application/json')) {
       const rawBody = await response.json()
 
-      throw new BE_Error({
+      throw new FunError({
         rawBody,
         message: rawBody?.error?.message,
         status: rawBody?.error?.status || response.status,
         statusText: response.statusText
       })
     }
-    else throw new BE_Error({ status: response.status, statusText: response.statusText, rawBody: await response.text() })
+    else throw new FunError({ status: response.status, statusText: response.statusText, rawBody: await response.text() })
   }
 
   return await response.json()

@@ -34,3 +34,19 @@
     This is the case @ `.npmignore` so all receive compiled code immediately with no extra steps required
 ### Why is `/dist` not sent to Github?
     This is the case @ `.gitignore` to simplify our git commits
+### How to get Solid for `.tsx` files in VSCode
+1. Download the `Symbols` extension by `Miguel Solorio`
+1. Bash cd into `~/.vscode/extensions/`
+1. Bash cd `miguelsolorio.symbols-` w/ the proper version
+1. Bash: `code .`
+1. @ `/src/icons/files/` place `solid.svg`
+1. @ `/src/symbol-icon-theme.json` w/in `iconDefinitions` place `"solid": { "iconPath": "./icons/files/solid.svg" },`
+1. @ `fileExtensions` update `"tsx": "solid",` & anywhere else ya love!
+1. @ `settings.json` add:
+```js
+"symbols.files.associations": {
+  "*.jsx": "solidjs",
+  "*.tsx": "solidjs"
+}
+```
+1. Reload vscode!

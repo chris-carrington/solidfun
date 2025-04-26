@@ -1,15 +1,21 @@
-import type { JSON_Response, JSONResponseMessages } from './fundamentals/types'
+import type { JSON_Response, FlatMessages } from './fundamentals/types'
 
 
-export class BE_Error {
+/**
+ * - Supports `valibot` messages
+ * - Supports errors where we don't wanna parse the json
+ * - Helpful when we wanna throw an error from one place get it in another, who knows how it was parsed, but stay simple w/ json and get the error info we'd love to know
+ */
+export class FunError {
+  isFunError = true
   message?: string
   status?: number
   rawBody?: string
   statusText?: string
-  messages?: JSONResponseMessages
+  messages?: FlatMessages
 
 
-  constructor({ status = 400, statusText, message, messages, rawBody }: {  status?: number, statusText?: string, message?: string,messages?: JSONResponseMessages, rawBody?: string }) {
+  constructor({ status = 400, statusText, message, messages, rawBody }: {  status?: number, statusText?: string, message?: string,messages?: FlatMessages, rawBody?: string }) {
     this.status = status
     this.message = message
     this.rawBody = rawBody
@@ -26,12 +32,12 @@ export class BE_Error {
     let res: JSON_Response<T> | undefined
 
     if (options?.error) {
-      if (options.error instanceof BE_Error) res = options.error.#get<T>(options.data)
-      else if (options.error instanceof Error) res = BE_Error.#simple(options.error.message)
-      else if (typeof options.error === 'string') res = BE_Error.#simple(options.error)      
+      if (options.error instanceof FunError) res = options.error.#get<T>(options.data)
+      else if (options.error instanceof Error) res = FunError.#simple(options.error.message)
+      else if (typeof options.error === 'string') res = FunError.#simple(options.error)      
     }
 
-    if (!res) res = BE_Error.#simple('❌ Sorry but an error just happened')
+    if (!res) res = FunError.#simple('❌ Sorry but an error just happened')
 
     return res
   }
@@ -41,7 +47,7 @@ export class BE_Error {
     const res: JSON_Response = { data }
 
     if (this.status || this.statusText || this.message || this.messages || this.rawBody) {
-      res.error = {}
+      res.error = { isFunError: true }
 
       if (this.status) res.error.status = this.status
       if (this.statusText) res.error.statusText = this.statusText
@@ -55,6 +61,6 @@ export class BE_Error {
 
 
   static #simple(message: string, status: number = 400): JSON_Response {
-    return { error: { status, message } }
+    return { error: { isFunError: true, status, message } }
   }
 }

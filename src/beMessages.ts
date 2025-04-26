@@ -1,5 +1,5 @@
+import type { FlatMessages } from './fundamentals/types'
 import { DEFAULT_MESSAGE_NAME } from './fundamentals/vars'
-import type { JSONResponseMessages } from './fundamentals/types'
 
 
 /**
@@ -8,7 +8,7 @@ import type { JSONResponseMessages } from './fundamentals/types'
  * - On the `FE` messages are: `Map<string, Signal<string[]>>`
  */
 export class BE_Messages {
-  messages: JSONResponseMessages
+  messages: FlatMessages
 
 
   constructor() {

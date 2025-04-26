@@ -20,10 +20,11 @@
   ```bash
   npm create solidfun # that was easy 🥳
   ```
+- Or, [do what "npm create solidfun" does manually!](https://github.com/chris-carrington/create-solidfun)
 
 
 ## 🧚‍♀️ What's included please?
-- 💚 Lovely API Syntax
+- 💜 Lovely API Syntax
   ```tsx
   import { API } from '@solidfun/api'
 
@@ -35,37 +36,80 @@
     }
   })
   ```
-- 💖 Lovely Route Syntax
+- ❤️ Lovely Layout Syntax
+  ```tsx
+  import './Guest.css'
+  import GuestNav from './GuestNav'
+  import { Layout } from '@solidfun/layout'
+
+
+  export default new Layout({
+    component({ children }) {
+      return <>
+        <div class="guest">
+          <GuestNav />
+          {children}
+        </div>
+      </>
+    }
+  })
+
+  ```
+- 💚 & Lovely Route Syntax!
   ```tsx
   import { Title } from '@solidjs/meta'
+  import { guestB4 } from '@src/lib/b4'
   import RootLayout from '../RootLayout'
   import { Route } from '@solidfun/route'
-  import WelcomeLayout from './WelcomeLayout'
+  import GuestLayout from './Guest.Layout'
+  import { Submit } from '@solidfun/submit'
+  import { Messages } from '@solidfun/messages'
+  import { signUpSchema } from '@src/schemas/SignUpSchema'
+  import { createOnSubmit } from '@solidfun/createOnSubmit'
 
 
   export default new Route({
-    path: '/',
-    layouts: [RootLayout, WelcomeLayout],
-    component() {
+    b4: guestB4,
+    path: '/sign-up',
+    layouts: [RootLayout, GuestLayout],
+    component({ fe }) {
+      const onSubmit = createOnSubmit(async (fd) => {
+        const body = signUpSchema.parse({ email: fd('email'), password: fd('password') }) // create, validate & parse the request body in 1 line 🪄
+
+        await fe.POST('/api/sign-up', { body, bitKey: 'signUp' }) // a bit is a boolean signal 💃
+      })
+
       return <>
-        <Title>🏡 Home</Title>
-        <h1>Home 🏡</h1>
+        <Title>Sign Up</Title>
+
+        <form onSubmit={onSubmit}>
+          <input placeholder="Email" name="email" type="email" />
+          <Messages name="email" /> {/* shows one/many messages, from signUpSchema.parse() and/or fe.POST(), for just the email input! 🚀 */}
+
+          <input placeholder="Password" name="password" type="password" />
+          <Messages name="password" />
+
+          <div class="footer">
+            <Submit label="Sign Up" bitKey="signUp" /> {/* Uses fe.bits.isOn('signUp') to show a loading indicator! 🏋️‍♂️ */}
+          </div>
+        </form>
       </>
     }
   })
   ```
-- 💛 Lovely Feature Blitz:
-    - Super fast **HMR** thanks to [Vite](https://vite.dev/)! 💜
-    - Easilly share data between components and/or pages! 🌀
-    - Run `async` functions **before** `route`'s or `api`'s boot! ✅
-    - Define zero to many `layouts` a `route` may sit within! 📥
-    - On ***update***... Only ***update***... What ***updated***...! 🥹 thanks to [Solid](https://www.solidjs.com/)!
-    - Provides 3 simple functions, `set`, `get` & `clear` to help simplify auth! 🚨 
-    - App specific `editor guidance` when creating links, calling API's & doing redirects! 👷‍♀️
-    - Render static page content **immediately**, 💨 stream all else once ready & navigate like an SPA! 🧚‍♀️ 
-    - Simply, for `api`'s or `route`'s, `define`, `read` & `validate`, `one` to `many`, `optional` or `required`, `path` or `search` `params`... 🤯
-    - `Blazingly-fast` cli 🤓 config w/ autocomplete & a super simple full stack api, that's filled w/ [JSDoc](https://jsdoc.app/about-getting-started) commenets 🙌 that provide in editor documentation! 🚀
-    ![Squirrel Engineer](https://i.imgur.com/V5J2qJq.jpeg)
+## 🦋 Got more `Solid Fun` features?!
+  - Fast **HMR** thanks to [Vite](https://vite.dev/)! 💜
+  - Deploy globally for [free](#-how-to-deploy), 💸 thanks to [Cloudflare](https://www.cloudflare.com/)! ☁️
+  - Run `async` functions **before** `route`'s or `api`'s boot! 🔐
+  - Define zero to many `layouts`, for a `route` to sit within! 📥
+  - Just 3 functions, `set`, `get` & `clear`, to help simplify auth! 🚨 
+  - On ***update***... Only ***update***... What ***updated***...! 💪 thanks to [Solid](https://www.solidjs.com/)!
+  - A full stack api, that's filled with [JSDoc](https://jsdoc.app/about-getting-started) commenets, 🙌 for in editor documentation! 🙏
+  - App specific `autocomplete`, when creating links, calling API's and doing redirects! 👷‍♀️
+  - Render static page content **immediately**, 💨 stream all else once ready & navigate like an SPA! 🧚‍♀️ 
+  - Simply `define`, `read` & `validate`, `one` to `many`, `optional` or `required`, `path` or `search` `params`, @ `api`'s or `route`'s... 🪷
+  - A `typesafe` config, a ⚡️ `blazingly-fast` cli & a beautifully tree shaked build, 📦 so the only `Solid Fun` items in your build, are items being used! ✅
+  ![Squirrel Engineer](https://i.imgur.com/V5J2qJq.jpeg)
 
 ## 🤓 What is `Solid Fun`'s Purpose?
 - To provide **Solid Fundamentals**... That help create lovely web sites & mobile applications!
@@ -74,7 +118,7 @@
 
 
 ## 🚀 How to Deploy!
-- Cloudflare offers free global hosting!
+- [Cloudflare](https://www.cloudflare.com/) offers free global hosting! 🥹
     - Create a GitHub account or Sign in
     - Push to a public or private repository
     - Create a Cloudlfare account or Sign in

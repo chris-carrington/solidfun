@@ -5,8 +5,8 @@
  */
 
 
-import { BE_Error } from '../beError'
-import type { JSONResponseMessages } from './types'
+import { FunError } from '../funError'
+import type { FlatMessages } from './types'
 import { flatten, safeParse, type BaseSchema, type InferOutput } from 'valibot'
 
 
@@ -45,8 +45,8 @@ export class ValibotSchema<T extends BaseSchema<any, any, any>> {
         }
       }
 
-      const messages: JSONResponseMessages = res
-      throw new BE_Error({ messages })
+      const messages: FlatMessages = res
+      throw new FunError({ messages })
     }
   }
 }

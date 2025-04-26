@@ -214,15 +214,16 @@ export type TreeAccumulator = { importsMap: ImportsMap, consts: string, routes: 
 
 
 /**
- * - Route const example:
-    ```ts
-    export const routes = {
-      '/': route_1,
-      '/about': route_2,
-      '/smooth': route_3,
-    }
-    ```
-  */
+ * 
+ * **Example:**
+ * ```ts
+ * export const routes = {
+ *   '/': route_1,
+ *   '/about': route_2,
+ *   '/smooth': route_3,
+ * }
+ * ```
+*/
 export const getConstEntry = (urlPath: string, moduleName: string, apiModuleName?: keyof typeof supportedApiMethods) => `  '${urlPath}': ${moduleName}${apiModuleName ? '.' + apiModuleName : ''},\n`
 
 

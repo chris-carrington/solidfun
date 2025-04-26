@@ -6,7 +6,21 @@
 
 
 /**
- * - Helpful when you've got a param that can be a set of different string values (enums)
+ * - Helpful when you've got a param that can be a set of different string values `(enums)`
+ *     - Provides a type for the enums
+ *     - Provides a toString() for the enums
+ *     - Provides a set() for enum lookup 
+ *
+ * **Example:**
+ * ```ts
+ * const elementEnums = new ParamEnums('fire','water','air','earth')
+ * 
+ * if (!elementEnums.has(params.element)) {
+ *   throw new Error(`❌ Please send a valid element, "${params.element}" is not a valid element, the valid elements are: ${elementEnums}`)
+ * }
+ * 
+ * type Element = InferEnums<typeof elementEnums> // 'earth' | 'fire' | 'water' | 'air'
+ * ```
  */
 export class ParamEnums<const T_Enums extends readonly string[]> {
   readonly enums: T_Enums
@@ -39,10 +53,14 @@ export class ParamEnums<const T_Enums extends readonly string[]> {
 
 
 /**
- * - Example: `export type Category = InferEnums<typeof categorySet>`
  * - Receives a `paramEnums` object
- * - Gives back the type that one value may be, example: 'fire' | 'water'
- */
+ * - Gives back the enums's type, example: `'yin' | 'yang'`
+ *
+ * **Example:**
+ * ```ts
+ * export type Category = InferEnums<typeof categoryEnums>
+ * ```
+ * */
 export type InferEnums<T_ParamEnums extends ParamEnums<readonly string[]>> = T_ParamEnums extends ParamEnums<infer T_Values>
   ? T_Values[number]
   : never

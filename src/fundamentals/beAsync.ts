@@ -5,7 +5,7 @@
 
 
 import { go } from './go'
-import { BE_Error } from '../beError'
+import { FunError } from '../funError'
 import { getCookie } from 'vinxi/http'
 import { buildURL } from '../buildURL'
 import { url as baseUrl } from './env'
@@ -76,13 +76,13 @@ export async function _beAPI<T_Response>({ url, cookieKey, method = 'GET', body 
 
     const contentType = response.headers.get('Content-Type') || ''
 
-    if (!contentType.includes('application/json')) throw new BE_Error({ message: '❌ BE Async Error', rawBody: await response.text(), status: response.status, statusText: response.statusText })
+    if (!contentType.includes('application/json')) throw new FunError({ message: '❌ BE Async Error', rawBody: await response.text(), status: response.status, statusText: response.statusText })
     else {
       const res: T_Response = await response.json()
       return res
     }
   } catch (error) {
-    throw BE_Error.catch({ error })
+    throw FunError.catch({ error })
   }
 }
 

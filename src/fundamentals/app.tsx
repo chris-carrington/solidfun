@@ -9,8 +9,9 @@ import { Layout } from './layout'
 import { Route as FunRoute } from './route'
 import { MetaProvider } from '@solidjs/meta'
 import { FileRoutes } from '@solidjs/start/router'
+import { MessagesCleanup } from '../messagesCleanup'
 import type { RouteProps, LayoutProps } from './types'
-import { useContext, Suspense, type JSX, onMount } from 'solid-js'
+import { useContext, Suspense, type JSX } from 'solid-js'
 import { FE_Context, FE_ContextProvider } from './feContext'
 import { Route, Router, type RouteSectionProps } from '@solidjs/router'
 
@@ -75,7 +76,10 @@ function rc(props: RouteSectionProps, route: FunRoute) {
     res = route.component(_props)
   }
 
-  return res
+  return <>
+    <MessagesCleanup />
+    {res}
+  </>
 }
 
 

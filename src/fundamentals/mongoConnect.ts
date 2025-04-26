@@ -15,24 +15,32 @@ import mongoose, { connect, type ConnectOptions } from 'mongoose'
  * - The default connection options are available at `defaultConnectOptions`
  * - falsy `connectOptions` => `defaultConnectOptions` applied
  * - truthy `connectOptions` => `connectOptions` applied
- * - Example:
-      ```ts
-      await mongoConnect()
-      // or 
-      await mongoConnect({ ...defaultConnectOptions, serverSelectionTimeoutMS: 4_000 })
-      // or 
-      await mongoConnect({ minPoolSize: 6, maxPoolSize: 21 }) // only options applied
-      ```
- * - `.env` example:
-      ```toml
-      MONGODB_DB=admin
-      MONGODB_PORT=27017
-      MONGODB_USER=admin
-      MONGODB_APP_DB=best_app
-      MONGODB_PASS=siudjfijskfkwnfwifjwefkweij8
-      MONGODB_HOST=example.com
-      ```
-  */
+ * 
+ * ---
+ *
+ * **Example:**
+ * ```ts
+ * await mongoConnect()
+ * // or 
+ * await mongoConnect({ ...defaultConnectOptions, serverSelectionTimeoutMS: 4_000 })
+ * // or 
+ * await mongoConnect({ minPoolSize: 6, maxPoolSize: 21 }) // only options applied
+ * ```
+ * 
+ * ---
+ *
+ * **.env Example:**
+ * ```toml
+ * MONGODB_DB=admin
+ * MONGODB_PORT=27017
+ * MONGODB_USER=admin
+ * MONGODB_APP_DB=example_app
+ * MONGODB_PASS=siudjfijskfkwnfwifjwefkweij8
+ * MONGODB_HOST=example.com
+ * ```
+ * ---
+ * @param connectOptions IF truthy `connectOptions` applied ELSE `defaultConnectOptions` applied
+ */
 export async function mongoConnect(connectOptions?: ConnectOptions): Promise<void> {
   try {
     switch (mongoose.connection.readyState) { // 0. Disconnected, 1. Connected, 2. Connecting, 3. Disconnecting

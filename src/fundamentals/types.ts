@@ -15,20 +15,31 @@ import type { APIEvent as SolidAPIEvent, FetchEvent as SolidFetchEvent } from '@
 
 /**
  * - Our recommended JSON server response type b/c it handles:
- *     - Valibot / Zod errors @ `res.error.messages`
- *     - Errors that happen on `fetch()` that are not parsable (set `status`, `rawBody` and `statusText` from `fetch()` to `JSON_Response`)
- *     - Any other data / error response that is valid JSON
+ *     - `Valibot` / `Zod` errors @ `res.error.messages`
+ *     - Errors that happen on `fetch()` that are not parsable (set `status`, `rawBody` and `statusText` from `fetch()` to `FunErrorShape`)
+ *     - Any other data / error response that is `JSON`
  * - Works great w/ the `Messages` component
+ * - The template loves when we have a common response shape but this is optional
+ * - But if you're catching a `Solid Fun` thrown error, it'll most likely be in this format
  */
 export type JSON_Response<T_Data = any> = {
   data?: T_Data,
-  error?: {
-    status?: number,
-    message?: string,
-    rawBody?: string,
-    statusText?: string,
-    messages?: JSONResponseMessages
-  }
+  error?: FunErrorType
+}
+
+
+/**
+ * - Supports `Valibot` / `Zod` messages
+ * - Supports errors where we don't wanna parse the json
+ * - Helpful when we wanna throw an error from one place get it in another, who knows how it was parsed, but stay simple w/ json and get the error info we'd love to know
+ */
+export type FunErrorType = {
+  isFunError: true
+  message?: string
+  status?: number
+  rawBody?: string
+  statusText?: string
+  messages?: FlatMessages
 }
 
 
@@ -39,17 +50,15 @@ export type GoResponse = ReturnType<typeof redirect>
 /** 
  * - Our recommnded server response
  * - A redirect or json
- * - & the json can handle data, errors, and/or valibot/zod messages
+ * - & the json can handle data, errors, and/or `Valibot` / `Zod` messages
  */
 export type BE_Response<T_Data = any> = JSON_Response<T_Data> | GoResponse
 
 
 /** 
- * - If messages are in the response, this is the flattened type
- * - This is how Valibot / Zod flatten their errors
- * - Use the ServerError class to create an error
+ * - This is how `Valibot` / `Zod` flatten their errors
  */
-export type JSONResponseMessages = Record<string, string[]>
+export type FlatMessages = Record<string, string[]>
 
 
 /** 
@@ -185,25 +194,3 @@ export type POST_Paths = '/api/post/a' | '/api/post/b'
 type a = InferGETResponse<'/api/get/a'>
 type b = JSON_Response<a>
 type c = Promise<b>
-
-/**
- * - One purpose of this type is to stop the typescript cricular reference error when placing a `go()` w/in a `b4()`
- * - Explanation:
- *     - To provide intellisense, ``go()`` needs all routes info
- *     - So if we place a `go()` in a `b4()`, we ask for the information about all routes, while creating a route
- *     - This is difficult for typescript to handle
- *     - This return type allows us to have intellisense @ `go()` AND tell typescript to stop looking for all route info
- *     - Example:
-       ```tsx
-          import { go } from '@solidfun/go'
-          import { Route } from '@solidfun/route'
-          import type { GoResponse } from '@solidfun/types'
-
-          export default new Route({
-            path: '/',
-            async b4(): GoResponse {
-              return go('/example')
-            }
-          })
-      ```
- */

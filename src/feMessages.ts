@@ -17,7 +17,7 @@ export class FE_Messages {
    * @param name - Messages are grouped by name
    * @param clearOnSubmit - If on form submit should this signal reset, default to true
    */
-  set({ name, value = DEFAULT_MESSAGE_NAME }: { value: string | string[], name: string }): Signal<string[]> {
+  set({ name = DEFAULT_MESSAGE_NAME, value }: { name?: string, value: string | string[] }): Signal<string[]> {
     let signal$ = this.#messages.get(name)
     const v = Array.isArray(value) ? value : [value]
 
@@ -46,7 +46,7 @@ export class FE_Messages {
    * @param value - If `value` is an array => concat `value` w/ `#messages`, if `value` is a `string` => push `value` onto `#messages`
    * @param name - Messages are grouped by name
    */
-  push({ name, value = DEFAULT_MESSAGE_NAME }: { value: string | string[], name: string }): void {
+  push({ name = DEFAULT_MESSAGE_NAME, value }: { name?: string, value: string | string[] }): void {
     const [current, setCurent] = this.get(name)
 
     if (Array.isArray(value)) setCurent(current().concat(value))
@@ -66,34 +66,33 @@ export class FE_Messages {
 
   /** Clear all messages */
   clearAll() {
-    for (const name in this.#messages) {
-      this.clear(name)
-    }
+    this.#messages.forEach((signal, name) => {
+      if (signal[0]().length) this.clear(name)
+    })
   }
 
 
   /**
-   * - Align `res.messages` with signals (from)
-   * - Align `res.message` with signals (from `feFetch()`)
-   * @param res - Response from server of type `JSON_Response` or atleast has a `Record<string, string[]>` @ `res.error.messages`
+   * - Align `res.messages` (from parsing validations) with signals
+   * - Align `res.message` (from `feFetch()` response) with signals
    */
   align(res: any) {
-    // res.messages
-    if (res && res?.messages && typeof res.messages === 'object') {
-      for (const name in res.messages) { // messages are grouped by name
-        const signal$ = this.#messages.get(name)
-
-        if (signal$) signal$[1](res.messages[name]) // call setter
-        else this.set({ name, value: res.messages[name] })
+    if (res && res?.isFunError === true) {
+      if (res.messages) {
+        for (const name in res.messages) { // messages are grouped by name
+          const signal$ = this.#messages.get(name)
+  
+          if (signal$) signal$[1](res.messages[name]) // call setter
+          else this.set({ name, value: res.messages[name] }) // create setter
+        }
       }
-    }
 
-    // res.message
-    if (res && res?.message && typeof res.message == 'string') {
-      const signal$ = this.#messages.get(DEFAULT_MESSAGE_NAME)
-
-      if (signal$) signal$[1]([res.message]) // call setter
-      else this.set({ name: DEFAULT_MESSAGE_NAME, value: res.message })
+      if (res.message) {
+        const signal$ = this.#messages.get(DEFAULT_MESSAGE_NAME)
+  
+        if (signal$) signal$[1]([res.message])
+        else this.set({ name: DEFAULT_MESSAGE_NAME, value: res.message })
+      }
     }
   }
 }

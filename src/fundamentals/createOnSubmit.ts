@@ -10,24 +10,24 @@ import { FE_Context } from './feContext'
 
 
 /**
- * - `createOnSubmit()` does the following for ya:
- *     - Provides a `fd()` function to your `onSubmit()` function to easilly get form data values
+ * - `createOnSubmit()`:
+ *     - Provides a `fd()` function, to get form data values
  *     - Calls `event.preventDefault()`
  *     - Clears previous messages
- *     - Places your `onSubmit()` w/in a `try`
- *     - & then on error response aligns BE messages w/ FE signals
- *
- * Example:
+ *     - Places `callback()` w/in a `try/catch`
+ *     - & then on error, aligns BE messages w/ FE signals
+ * ---
+ * **Example:**
  * ```ts
  * const onSubmit = createOnSubmit(async (fd) => {
- *   const body = exampleSchema.parse({ abc: fd('abc') })
- *   await fe.POST('/api/example', { body, bitKey: 'example' })
+ *   const body = exampleSchema.parse({ email: fd('email') })
+ *   await fe.POST('/api/example', { body, bitKey: 'example' }) // a bit is a boolean signal
  * })
  * ```
- *
+ * ---
  * @param callback - Async function to call on submit
- * @param callback.fd - Typically called when you'd love to get `values` from the `<form>` that was submitted, example: `fd('example')`
- * @param callback.event - the `SubmitEvent`, typically called when `fd()` is not low level enough
+ * @param callback.fd - The 1st param provided to `callback()`. `fd()` helps us get `values` from the `<form>` that was submitted, example: `fd('example')` provides the value from `<input name="example" />`
+ * @param callback.event - The 2nd param provided to `callback()`. The `event`, of type `SubmitEvent`, is typically used when `fd()` is not low level enough
  */
 export function createOnSubmit(callback: OnSubmitCallback) {
   return async (event: SubmitEvent) => {
