@@ -7,7 +7,7 @@
 /**
  * - The `ts` utility `Pick<T, K>` returns an object containing only the specified keys with their original types
  * 
- * **Example:**
+ * @example
  * ```ts
  * type User = { id: number, name: string, email: string }
  * type UserLite = Pick<User, 'id' | 'name'>

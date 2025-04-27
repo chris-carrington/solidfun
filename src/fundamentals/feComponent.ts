@@ -12,7 +12,7 @@ import { clientOnly } from '@solidjs/start'
 /**
  * ### Creates a frontend (fe) only component!
  * 
- * **Event Listener Example:**
+ * @example
  * ```ts
  * import { onMount, onCleanup } from 'solid-js'
  * import { feComponent } from '@solidfun/feComponent'
@@ -36,7 +36,7 @@ import { clientOnly } from '@solidjs/start'
  * 
  * ---
  * 
- * **Component Props Example:**
+ * @example
  * ```ts
  * import { type JSX } from 'solid-js'
  * 
@@ -47,7 +47,7 @@ import { clientOnly } from '@solidjs/start'
  * 
  * ---
  * 
- * **Use Example:**
+ * @example
  * ```tsx
  * import { Layout } from '@solidfun/layout' // or route 🥳
  * import PropsExample from '@src/lib/PropsExample'
@@ -73,15 +73,5 @@ export function feComponent<T_Props = {}>(component: FEComponent<T_Props>): FECo
 /**
  * The anonymous function we pass to `feComponent()`
  * @param props Treat like standard component props we'd destructure for any Solid component
- * 
- * ---
- * ### Complex Example:
- * ```ts
- * import { type JSX } from 'solid-js'
- * 
- * export const Example = feComponent(({ name, ...props }: { name: string } & JSX.HTMLAttributes<HTMLDivElement>) => {
- *   return <div {...props}>❤️ {name}</div>
- * })
- * ```
  */
 export type FEComponent<T_Props = {}> = (props: T_Props) => JSX.Element

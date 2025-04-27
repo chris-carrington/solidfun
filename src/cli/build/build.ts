@@ -5,6 +5,7 @@ import { buildWrite } from './buildWrite.js'
 import { fundamentals } from '../../fundamentals.js'
 import path, { join, resolve, dirname } from 'node:path'
 import { supportedApiMethods } from '../../fundamentals/vars.js'
+import { cuteLog } from '../../fundamentals/cuteLog.js'
 
 
 
@@ -82,7 +83,7 @@ export class Build {
 
 
   #goodByeLog() {
-    if (!this.commandOptions.has('verbose')) console.log(`✅ Wrote: .solidfun`)
+    if (!this.commandOptions.has('verbose')) cuteLog('✅ Wrote: .solidfun', 'bold', 'green')
   }
 
 
@@ -215,7 +216,7 @@ export type TreeAccumulator = { importsMap: ImportsMap, consts: string, routes: 
 
 /**
  * 
- * **Example:**
+ * @example
  * ```ts
  * export const routes = {
  *   '/': route_1,

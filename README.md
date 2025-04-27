@@ -136,3 +136,55 @@
     - 💖 Deploy!
 
 ![Bunnies writing code](https://i.imgur.com/d0wINvM.jpeg)
+
+
+## 💖 FAQ
+1. How to show intellisense dropdown in VS Code?
+    1. `Control` + `Space`
+    
+1. How to reload VS Code?
+    1. `Command` + `Shift` + `P`
+    1. Type: `reload window`
+    1. Press `Enter`
+
+1. How to open VS Code `settings.json`
+    1. `Command` + `Shift` + `P`
+    1. Type: `user settings json`
+    1. Press `Enter`
+
+1. How to get VS Code to create `<div class="example"></div>` on `.example`
+    1. @ VS Code `settings.json` add:
+        ```json
+        {
+          "emmet.includeLanguages": {
+            "typescriptreact": "html",
+            "javascriptreact": "html"
+          }
+        }
+        ```
+    1. Reload VS Code!
+
+1. How to run `code .` in VS Code `bash` & have it open a new VS Code in that directory
+    1. `Command` + `Shift` + `P`
+    1. Type: `Shell Command: Install 'code' command in PATH`
+    1. Press `Enter`
+
+1. How to get the Solid icon for `.tsx` files in VS Code
+    1. Download the `Symbols` extension by `Miguel Solorio`
+    1. Bash cd into `~/.vscode/extensions/`
+    1. Bash cd `miguelsolorio.symbols-` w/ the proper version
+    1. Bash: `code .`
+    1. @ `/src/icons/files/` place `solid.svg`
+    1. @ `/src/symbol-icon-theme.json` w/in `iconDefinitions` place `"solid": { "iconPath": "./icons/files/solid.svg" },`
+    1. @ `fileExtensions` update `"tsx": "solid",` & anywhere else ya love!
+    1. @ VS Code `settings.json` add:
+        ```js
+        "symbols.files.associations": {
+          "*.jsx": "solidjs",
+          "*.tsx": "solidjs"
+        }
+        ```
+    1. Reload VS Code!
+
+1. Gotta errors dictionary?
+    1. [Yes!](https://github.com/chris-carrington/solidfun/blob/main/README_ERRORS.md)

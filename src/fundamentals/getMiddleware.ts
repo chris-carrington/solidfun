@@ -11,13 +11,13 @@ import { createMiddleware, type ResponseMiddleware } from '@solidjs/start/middle
 /**
  * - Returns a solid start middleware object configured to work w/ Solid Fun
  * - The lower level `onMiddlewareRequest()` is also available if you'd love closer access to your middleware
- * - Example `getMiddleware()` use:
-    ```tsx
-    import { getMiddleware } from '@solidfun/getMiddleware'
-
-    export default getMiddleware()
-    ```
- * @param onBeforeResponse `createMiddleware` takes an `onRequest` and an `onBeforeResponse`, this is the `onBeforeResponse`
+ * @example
+ * ```ts
+ * import { getMiddleware } from '@solidfun/getMiddleware'
+ * 
+ * export default getMiddleware()
+ * ```
+ * @param options.onBeforeResponse The SolidJS `createMiddleware` takes an `onRequest` and an `onBeforeResponse`, this is the `onBeforeResponse`
  */
 export function getMiddleware(options: { onBeforeResponse?: ResponseMiddleware | ResponseMiddleware[] } = {}) {
   return createMiddleware({

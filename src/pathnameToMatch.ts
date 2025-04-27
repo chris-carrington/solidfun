@@ -24,7 +24,7 @@ export function pathnameToMatch(pathname: string, map: Record<string, API | Rout
 
 
 
-export type RouteMatch<R> = {
-  handler: R
+export type RouteMatch<T_Handler> = {
+  handler: T_Handler
   params: Record<string, string | undefined>
 }

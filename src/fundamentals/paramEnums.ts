@@ -11,12 +11,12 @@
  *     - Provides a toString() for the enums
  *     - Provides a set() for enum lookup 
  *
- * **Example:**
+ * @example
  * ```ts
  * const elementEnums = new ParamEnums('fire','water','air','earth')
  * 
  * if (!elementEnums.has(params.element)) {
- *   throw new Error(`❌ Please send a valid element, "${params.element}" is not a valid element, the valid elements are: ${elementEnums}`)
+ *   throw new Error(`🔔 Please send a valid element, "${params.element}" is not a valid element, the valid elements are: ${elementEnums}`)
  * }
  * 
  * type Element = InferEnums<typeof elementEnums> // 'earth' | 'fire' | 'water' | 'air'
@@ -56,7 +56,7 @@ export class ParamEnums<const T_Enums extends readonly string[]> {
  * - Receives a `paramEnums` object
  * - Gives back the enums's type, example: `'yin' | 'yang'`
  *
- * **Example:**
+ * @example
  * ```ts
  * export type Category = InferEnums<typeof categoryEnums>
  * ```

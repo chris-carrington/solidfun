@@ -18,7 +18,7 @@ import mongoose, { connect, type ConnectOptions } from 'mongoose'
  * 
  * ---
  *
- * **Example:**
+ * @example
  * ```ts
  * await mongoConnect()
  * // or 
@@ -29,7 +29,8 @@ import mongoose, { connect, type ConnectOptions } from 'mongoose'
  * 
  * ---
  *
- * **.env Example:**
+ * ### .env
+ * @example
  * ```toml
  * MONGODB_DB=admin
  * MONGODB_PORT=27017

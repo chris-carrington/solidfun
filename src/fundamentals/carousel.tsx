@@ -14,24 +14,32 @@ import type { JSX } from 'solid-js'
  * - 1st prop is `items` which is the `For` component
  * - 2nd optional prop is `duplicateCount` which defaults to 2, we duplicate the list atleast twice so that when we get to the end there are items shown, if you want more duplicates use this prop, if `duplicateCount` is falsy of less then 2, we set it to 2
  * - B/c of how solid jsx works, this component will not work correclty if `items` or its child items are the same and just referenced, the items must be different, which is typical from a db, but not in testing, so for testing use an array where each item is unique and not just a reference to the same item and all will work gr8, as seen in the example below 🙌
- * - Example `.css`: 
- *     - `.carousel { width: 150px; }`
- *     - `.carousel .loops { animation-duration: 15s !important; }`
- *     - `.carousel .loops .goal { width: 90px; margin-right: 18px; }`
- * - Example `.tsx` 🥳
-      ```tsx
-      const goals = [{title: 'relax 🏖️'}, {title: 'bliss 🌤️'}, {title: 'peace 🧘‍♀️'}]
-
-      return <> 
-        <Carousel items={
-          <For each={goals}>{
-            (o) => <>
-              <div class="goal">{o.title}</div>
-            </>
-          }</For>
-        }/>
-      </>
-    ```
+ * 
+ * ---
+ * 
+ * @example
+ * ```css
+ * .carousel { width: 150px; }
+ * .carousel .loops { animation-duration: 15s !important; }
+ * .carousel .loops .goal { width: 90px; margin-right: 18px; }
+ * ```
+ * 
+ * ---
+ * 
+ * @example
+ * ```tsx
+ * const goals = [{title: 'relax 🏖️'}, {title: 'bliss 🌤️'}, {title: 'peace 🧘‍♀️'}]
+ * 
+ * return <> 
+ *   <Carousel items={
+ *     <For each={goals}>{
+ *       (o) => <>
+ *         <div class="goal">{o.title}</div>
+ *       </>
+ *     }</For>
+ *   </Carousel>
+ * </>
+ * ```
  */
 export function Carousel({ items, duplicateCount = 2 }: { items: JSX.Element, duplicateCount?: number }) {
   if (!duplicateCount || typeof duplicateCount !== 'number' || duplicateCount < 2) duplicateCount = 2

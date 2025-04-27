@@ -13,11 +13,16 @@ export class Bits {
    * @param bitKey - `Bits` are `boolean signals`, they live in a `map`, so they each have a `bitKey` to help us identify them
    * @param value - Set bit value
    */
-  set(bitKey: string, value: boolean) {
-    const signal$ = this.#bits.get(bitKey) 
+  set(bitKey: string, value: boolean): Signal<boolean> {
+    let signal = this.#bits.get(bitKey) 
 
-    if (signal$) signal$[1](value) // if signal in map => call it's setter
-    else this.#bits.set(bitKey, createSignal(value)) // create signal / set signal to value / add signal to map
+    if (signal) signal[1](value) // if signal in map => call it's setter
+    else {
+      signal = createSignal(value)
+      this.#bits.set(bitKey, signal) // create signal / set signal to value / add signal to map
+    }
+
+    return signal
   }
   
   
@@ -31,9 +36,6 @@ export class Bits {
     const signal$ = this.#bits.get(bitKey) 
 
     if (signal$) return signal$[0]() // if signal in map => return it's current value
-    else {
-      this.set(bitKey, false) // default to false
-      return false
-    }
+    else return this.set(bitKey, false)[0]() // default to false
   }
 }
