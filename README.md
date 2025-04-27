@@ -1,29 +1,28 @@
 ![Sloths developing software in a tree](https://i.imgur.com/LognTyf.jpeg)
 
-## 🧐 Why create w/ `Solid Fun`?
-- B/c `Solid Fun`, helps us find 🐛's, in websites we're creating, early!
-
-
-## 🧙‍♂️ How please?
-- **`fun build`** creates our **app specific** type definitions 
--  & code editors light up based on these definitions
--  So building links, calling APIs ***AND*** redirecting... is **type-safe**! 🙌
-
-
-
-## 🔮 What is the tech stack?
-  - [Solid Start](https://docs.solidjs.com/solid-start) 🙏
-
-
+## 🤓 `Solid Fun` Features!
+  - Deploy globally for [free](#-how-to-deploy), 💸 thanks to [Cloudflare](https://www.cloudflare.com/)! ☁️
+  - When unminified, `Solid Fun` is still smaller than a single photo, b/c it's less then `180 kB`, requires `0 dependencies` and only builds the `Solid Fun` items you import ***AND*** call! ✅
+  - Enjoy `autocomplete` specific to your api's & routes, directly in your editor, when creating links, doing redirects & calling your API! 👷‍♀️
+  - A `blazingly-fast` ⚡️ cli that creates new projects 👩‍🍼 and builds the `autocompleting intellisense types` for existing ones! 🏗️
+  - Full-stack API, rich with `examples` & `docs`, available in your editor when you hover over `Solid Fun` functions, thanks to [JSDoc](https://jsdoc.app/about-getting-started) comments! 📝
+  - Render static page content **immediately**, 💨 stream all else once ready & navigate as SPA! 🧚‍♀️ 
+  - Define zero to many `layouts`, that a `route` is placed within! 📥
+  - Run `async` functions **before** `route`'s or `api`'s boot! 🔐
+  - On ***update***... Only ***update***... What ***updated***  💪 thanks to [Solid](https://www.solidjs.com/)! 🙏
+  - Animate lists beautifully, with the `<AnimatedFor />` component! 🌀
+  - Auth w/ ease, thanks to the session data helpers: `set`, `get` & `clear`! 🚨 
+  - Easilly `define`, `read` & `validate`, `path` or `search` `params`, @ `api`'s or `route`'s! 🪷
+  - Create joyful logs w/ `cuteLog()`, example: `cuteLog('❤️ Aloha!', 'cyan', 'bold', 'underline')` or the lower level `cuteString()`, which both include 30+ intellisense options! 💬
 ## ✨ How may we get started?
 - Open a `bash` terminal, & then:
   ```bash
   npx create-solidfun@latest # that was easy 🥳
   ```
-- [See what "npx create-solidfun" does!](https://github.com/chris-carrington/create-solidfun)
+- [See what "npx create-solidfun" does automatically 🔮!](https://github.com/chris-carrington/create-solidfun)
 
 
-## 🧚‍♀️ What's included please?
+## 🧚‍♀️ Got code?!
 - 💜 Lovely API Syntax
   ```tsx
   import { API } from '@solidfun/api'
@@ -73,8 +72,11 @@
     path: '/sign-up',
     layouts: [RootLayout, GuestLayout],
     component({ fe }) {
-      const onSubmit = createOnSubmit(async (fd) => {
-        const body = signUpSchema.parse({ email: fd('email'), password: fd('password') }) // create, validate & parse the request body in 1 line 🪄
+      const onSubmit = createOnSubmit(async (fd) => { // fd() is a form data helper, createOnSubmit() places this callback() into a try/catch & on fe or be catch, <Messages /> get populated below!
+        const body = signUpSchema.parse({ // create, validate & parse the request body 🪄
+          email: fd('email'),
+          password: fd('password')
+        }) 
 
         await fe.POST('/api/sign-up', { body, bitKey: 'signUp' }) // a bit is a boolean signal 💃
       })
@@ -97,20 +99,6 @@
     }
   })
   ```
-## 🦋 Got more `Solid Fun` features?!
-  - Deploy globally for [free](#-how-to-deploy), 💸 thanks to [Cloudflare](https://www.cloudflare.com/)! ☁️
-  - Simplify auth with three helpers: `set`, `get` & `clear`! 🚨 
-  - Run `async` functions **before** `route`'s or `api`'s boot! 🔐
-  - On ***update***... Only ***update***... What ***updated***  💪 thanks to [Solid](https://www.solidjs.com/)! 🙏
-  - Define zero to many `layouts`, that a `route` is placed within! 📥
-  - Animate items into the DOM smoothly w/ the `<AnimatedFor />` component! 🌀
-  - Full-stack API, rich with in editor examples & docs, thanks to [JSDoc](https://jsdoc.app/about-getting-started) comments! 📝
-  - A `blazingly-fast` ⚡️ cli that creates new projects 👩‍🍼 and builds existing ones! 🏗️
-  - App specific `autocomplete`, when creating links, doing redirects & calling your API! 👷‍♀️
-  - Easilly `define`, `read` & `validate`, `path` or `search` `params`, @ `api`'s or `route`'s! 🪷
-  - Render static page content **immediately**, 💨 stream all else once ready & navigate like an SPA! 🧚‍♀️ 
-  - Create joyful logs w/ `cuteLog()`, example: `cuteLog('❤️ Aloha!', 'cyan', 'bold', 'underline')` or the lower level `cuteString()`, which both include 30+ intellisense options! 💬
-  - When unminified with comments, `Solid Fun` is still smaller than a single photo, b/c it's less then `180 kB`, requires `0 dependencies` and only builds the `Solid Fun` items you import ***AND*** call! ✅
   ![Squirrel Engineer](https://i.imgur.com/V5J2qJq.jpeg)
 
 ## 🤓 What is `Solid Fun`'s Purpose?
