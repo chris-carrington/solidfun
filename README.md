@@ -18,7 +18,7 @@
 ## ✨ How may we get started?
 - Open a `bash` terminal, & then:
   ```bash
-  npm create solidfun # that was easy 🥳
+  npx create-solidfun@latest # that was easy 🥳
   ```
 - Or, [do what "npm create solidfun" does manually!](https://github.com/chris-carrington/create-solidfun)
 
@@ -98,17 +98,19 @@
   })
   ```
 ## 🦋 Got more `Solid Fun` features?!
-  - Fast **HMR** thanks to [Vite](https://vite.dev/)! 💜
   - Deploy globally for [free](#-how-to-deploy), 💸 thanks to [Cloudflare](https://www.cloudflare.com/)! ☁️
+  - Simplify auth with three helpers: `set`, `get` & `clear`! 🚨 
   - Run `async` functions **before** `route`'s or `api`'s boot! 🔐
-  - Define zero to many `layouts`, for a `route` to sit within! 📥
-  - Just 3 functions, `set`, `get` & `clear`, to help simplify auth! 🚨 
-  - On ***update***... Only ***update***... What ***updated***...! 💪 thanks to [Solid](https://www.solidjs.com/)!
-  - A full stack api, that's filled with [JSDoc](https://jsdoc.app/about-getting-started) commenets, 🙌 for in editor documentation! 🙏
-  - App specific `autocomplete`, when creating links, calling API's and doing redirects! 👷‍♀️
+  - On ***update***... Only ***update***... What ***updated***  💪 thanks to [Solid](https://www.solidjs.com/)! 🙏
+  - Define zero to many `layouts`, that a `route` is placed within! 📥
+  - Animate items into the DOM smoothly w/ the `<AnimatedFor />` component! 🌀
+  - Full-stack API, rich with in editor examples & docs, thanks to [JSDoc](https://jsdoc.app/about-getting-started) comments! 📝
+  - A `blazingly-fast` ⚡️ cli that creates new projects 👩‍🍼 and builds existing ones! 🏗️
+  - App specific `autocomplete`, when creating links, doing redirects & calling your API! 👷‍♀️
+  - Easilly `define`, `read` & `validate`, `path` or `search` `params`, @ `api`'s or `route`'s! 🪷
   - Render static page content **immediately**, 💨 stream all else once ready & navigate like an SPA! 🧚‍♀️ 
-  - Simply `define`, `read` & `validate`, `one` to `many`, `optional` or `required`, `path` or `search` `params`, @ `api`'s or `route`'s... 🪷
-  - A `typesafe` config, a ⚡️ `blazingly-fast` cli & a beautifully tree shaked build, 📦 so the only `Solid Fun` items in your build, are items being used! ✅
+  - Create joyful logs w/ `cuteLog()`, example: `cuteLog('❤️ Aloha!', 'cyan', 'bold', 'underline')` or the lower level `cuteString()`, which both include 30+ intellisense options! 💬
+  - When unminified with comments, `Solid Fun` is still smaller than a single photo, b/c it's less then `180 kB`, requires `0 dependencies` and only builds the `Solid Fun` items you import ***AND*** call! ✅
   ![Squirrel Engineer](https://i.imgur.com/V5J2qJq.jpeg)
 
 ## 🤓 What is `Solid Fun`'s Purpose?
@@ -140,20 +142,20 @@
 
 ## 💖 FAQ
 1. How to show intellisense dropdown in VS Code?
-    1. `Control` + `Space`
+    - `Control` + `Space`
     
 1. How to reload VS Code?
-    1. `Command` + `Shift` + `P`
-    1. Type: `reload window`
-    1. Press `Enter`
+    - `Command` + `Shift` + `P`
+    - Type: `reload window`
+    - Press `Enter`
 
 1. How to open VS Code `settings.json`
-    1. `Command` + `Shift` + `P`
-    1. Type: `user settings json`
-    1. Press `Enter`
+    - `Command` + `Shift` + `P`
+    - Type: `user settings json`
+    - Press `Enter`
 
 1. How to get VS Code to create `<div class="example"></div>` on `.example`
-    1. @ VS Code `settings.json` add:
+    - @ VS Code `settings.json` add:
         ```json
         {
           "emmet.includeLanguages": {
@@ -162,29 +164,29 @@
           }
         }
         ```
-    1. Reload VS Code!
+    - Reload VS Code!
 
 1. How to run `code .` in VS Code `bash` & have it open a new VS Code in that directory
-    1. `Command` + `Shift` + `P`
-    1. Type: `Shell Command: Install 'code' command in PATH`
-    1. Press `Enter`
+    - `Command` + `Shift` + `P`
+    - Type: `Shell Command: Install 'code' command in PATH`
+    - Press `Enter`
 
 1. How to get the Solid icon for `.tsx` files in VS Code
-    1. Download the `Symbols` extension by `Miguel Solorio`
-    1. Bash cd into `~/.vscode/extensions/`
-    1. Bash cd `miguelsolorio.symbols-` w/ the proper version
-    1. Bash: `code .`
-    1. @ `/src/icons/files/` place `solid.svg`
-    1. @ `/src/symbol-icon-theme.json` w/in `iconDefinitions` place `"solid": { "iconPath": "./icons/files/solid.svg" },`
-    1. @ `fileExtensions` update `"tsx": "solid",` & anywhere else ya love!
-    1. @ VS Code `settings.json` add:
+    - Download the `Symbols` extension by `Miguel Solorio`
+    - Bash cd into `~/.vscode/extensions/`
+    - Bash cd `miguelsolorio.symbols-` w/ the proper version
+    - Bash: `code .`
+    - @ `/src/icons/files/` place `solid.svg`
+    - @ `/src/symbol-icon-theme.json` w/in `iconDefinitions` place `"solid": { "iconPath": "./icons/files/solid.svg" },`
+    - @ `fileExtensions` update `"tsx": "solid",` & anywhere else ya love!
+    - @ VS Code `settings.json` add:
         ```js
         "symbols.files.associations": {
           "*.jsx": "solidjs",
           "*.tsx": "solidjs"
         }
         ```
-    1. Reload VS Code!
+    - Reload VS Code!
 
 1. Gotta errors dictionary?
-    1. [Yes!](https://github.com/chris-carrington/solidfun/blob/main/README_ERRORS.md)
+    -  [Yes please!](https://github.com/chris-carrington/solidfun/blob/main/README_ERRORS.md)

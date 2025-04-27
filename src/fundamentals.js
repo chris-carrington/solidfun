@@ -30,6 +30,7 @@ export const fundamentals = new Map([
   ['api', new Fundamental('ts', 'solid', 'copy')],
   ['apis', new Fundamental('ts', 'solid', 'custom')],
   ['app', new Fundamental('tsx', 'solid', 'custom')],
+  ['animatedFor', new Fundamental('tsx', 'solid', 'copy')],
   ['be', new Fundamental('ts', 'solid', 'copy')],
   ['beAsync', new Fundamental('ts', 'solid', 'copy')],
   ['bits', new Fundamental('ts', 'solid', 'helper')],

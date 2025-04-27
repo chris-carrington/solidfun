@@ -49,8 +49,12 @@
 
 
 ## What is the purpose of `"prepublishOnly": "npm run build",` in the package.json?
-- This ensure `npm publish` does an `npm run build` first automatically
+- NPM lifecycle hook ensures `npm publish` does an `npm run build` first automatically
 
+
+
+## Why `"postbuild": "chmod +x dist/src/cli/cli.js || true",` in package.json?
+- NPM lifecycle hook ensures windows quietly fails quietly & mac/linux runs chmod which adds the executable bit to the generated cli.js 
 
 
 ## Why is the `/dist` sent to NPM?
@@ -65,3 +69,10 @@
 
 ## How to do fancy text in the terminal?
 - [ANSI escape code generator](https://ansi.gabebanks.net/)
+
+
+## Why `&& (chmod +x cli.js || true)`
+- Ensure cli.js is always executable right after you build it
+- ALL get a ready-to-run executable CLI 
+- The || true allows us to gracefully skip on windows
+- Windows doesn’t care about executable (+x) permissions like Linux or Mac does
