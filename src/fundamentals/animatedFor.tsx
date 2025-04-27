@@ -21,12 +21,10 @@ import { onMount, type JSX } from 'solid-js'
     }
 
     .item {
-      opacity: 0;
-      transform: translateY(-20px);
       transition: var(--speed);
+      transform: translateY(-2.4rem);
       clip-path: polygon(52% 42%, 55% 42%, 54% 43%, 54% 44%);
       &.in {
-        opacity: 1;
         transform: translateY(0);
         clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0);
       }
@@ -112,10 +110,10 @@ export class ForAnimator {
    * - Get's the original positions, so then when we animate later, we can start from the original positions
    */
   preFetch(): void {
-    if (this.domElementsWrapper) {
-      const ogElements = Array.from(this.domElementsWrapper.children) as HTMLElement[]
-      this.ogPositions = ogElements.map(el => el.getBoundingClientRect())
-    }
+    if (!this.domElementsWrapper) throw new Error('Please ensure ForAnimator.domElementsWrapper')
+
+    const ogElements = Array.from(this.domElementsWrapper.children) as HTMLElement[]
+    this.ogPositions = ogElements.map(el => el.getBoundingClientRect())
   }
 
   /**
@@ -126,36 +124,34 @@ export class ForAnimator {
    */
   postSet(options: { animateInClass?: string; transitionEndValue?: string; } = {}): void {
     requestAnimationFrame(() => { // next tick
-      if (this.ogPositions && this.domElementsWrapper) {
-        const { animateInClass = 'in', transitionEndValue = 'var(--speed)' } = options // options defaults
+    if (!this.ogPositions) throw new Error('Please ensure ForAnimator.ogPositions is truthy')
+    if (!this.domElementsWrapper) throw new Error('Please ensure ForAnimator.domElementsWrapper is truthy')
 
-        const newItems = Array.from(this.domElementsWrapper.children) as HTMLElement[]
+      const { animateInClass = 'in', transitionEndValue = 'var(--speed)' } = options // options defaults
+
+      const newItems = Array.from(this.domElementsWrapper.children) as HTMLElement[]
+  
+      newItems.forEach((el, i) => {
+        if (i === 0) requestAnimationFrame(() => el.classList.add(animateInClass)) // newest item
+        else { // existing items
+          if (!this.ogPositions) return
+
+          const ogPosition = this.ogPositions[i - 1]
+          if (!ogPosition) return
+
+          const newPosition = el.getBoundingClientRect()
+          const topDifference = ogPosition.top - newPosition.top
+          if (!topDifference) return
     
-        newItems.forEach((el, i) => {
-          if (i === 0) { // newest item
-            requestAnimationFrame(() => {
-              el.classList.add(animateInClass) // animate in
-            })
-          } else if (this.ogPositions) { // existing items
-            const ogPosition = this.ogPositions[i - 1]
+          el.style.transition = 'all 0s' // immediately go
+          el.style.transform = `translateY(${topDifference}px)` // to the previous position
 
-            if (ogPosition) {
-              const newPosition = el.getBoundingClientRect()
-              const topDifference = ogPosition.top - newPosition.top
-      
-              if (topDifference) {
-                el.style.transition = 'all 0s' // immediately go
-                el.style.transform = `translateY(${topDifference}px)` // to the previous position
-      
-                requestAnimationFrame(() => { // on next tick
-                  el.style.transition = transitionEndValue // smoothly move back
-                  el.style.transform = 'translateY(0)' // to the newest position
-                })
-              }
-            }
-          }
-        })
-      }
+          requestAnimationFrame(() => { // on next tick
+            el.style.transition = transitionEndValue // smoothly move back
+            el.style.transform = 'translateY(0)' // to the newest position
+          })
+        }
+      })
     })
   }
 }

@@ -1,13 +1,13 @@
 ![Sloths developing software in a tree](https://i.imgur.com/LognTyf.jpeg)
 
 ## 🧐 Why create w/ `Solid Fun`?
-- B/c Solid Fun helps us find 🐛's early!
+- B/c `Solid Fun`, helps us find 🐛's, in websites we're creating, early!
 
 
 ## 🧙‍♂️ How please?
 - **`fun build`** creates our **app specific** type definitions 
 -  & code editors light up based on these definitions
--  So building links, calling APIs, or redirecting is **type-safe**! 🙌
+-  So building links, calling APIs ***AND*** redirecting... is **type-safe**! 🙌
 
 
 
@@ -20,7 +20,7 @@
   ```bash
   npx create-solidfun@latest # that was easy 🥳
   ```
-- Or, [do what "npm create solidfun" does manually!](https://github.com/chris-carrington/create-solidfun)
+- [See what "npx create-solidfun" does!](https://github.com/chris-carrington/create-solidfun)
 
 
 ## 🧚‍♀️ What's included please?
