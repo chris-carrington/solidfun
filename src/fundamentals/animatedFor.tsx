@@ -68,7 +68,7 @@ export default new Route({
         </Show>
       </button>
 
-      <ForAnimated class="items" forAnimator={ forAnimator } items={
+      <AnimatedFor class="items" forAnimator={ forAnimator } items={
         <For each={items()}>
           {item => <div class="item">{item}</div>}
         </For>
@@ -91,7 +91,7 @@ export function AnimatedFor({ items, forAnimator, ...props }: { items: JSX.Eleme
   })
 
   return <>
-    <div ref={el => (domElementsWrapper = el)} {...props}>
+    <div ref={el => (domElementsWrapper = el)} {...props} class="animated-for">
       {items}
     </div>
   </>
