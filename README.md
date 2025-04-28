@@ -1,19 +1,33 @@
 ![Sloths developing software in a tree](https://i.imgur.com/LognTyf.jpeg)
 
 ## 🤓 `Solid Fun` Features!
-  - Deploy globally for [free](#-how-to-deploy), 💸 thanks to [Cloudflare](https://www.cloudflare.com/)! ☁️
-  - When unminified, `Solid Fun` is still smaller than a single photo, b/c it's less then `180 kB`, requires `0 dependencies` and only builds the `Solid Fun` items you import ***AND*** call! ✅
-  - Enjoy `autocomplete` specific to your api's & routes, directly in your editor, when creating links, doing redirects & calling your API! 👷‍♀️
-  - A `blazingly-fast` ⚡️ cli that creates new projects 👩‍🍼 and builds the `autocompleting intellisense types` for existing ones! 🏗️
-  - Full-stack API, rich with `examples` & `docs`, available in your editor when you hover over `Solid Fun` functions, thanks to [JSDoc](https://jsdoc.app/about-getting-started) comments! 📝
-  - Render static page content **immediately**, 💨 stream all else once ready & navigate as SPA! 🧚‍♀️ 
-  - Define zero to many `layouts`, that a `route` is placed within! 📥
-  - Run `async` functions **before** `route`'s or `api`'s boot! 🔐
-  - On ***update***... Only ***update***... What ***updated***  💪 thanks to [Solid](https://www.solidjs.com/)! 🙏
-  - Animate lists beautifully, with the `<AnimatedFor />` component! 🌀
-  - Auth w/ ease, thanks to the session data helpers: `set`, `get` & `clear`! 🚨 
-  - Easilly `define`, `read` & `validate`, `path` or `search` `params`, @ `api`'s or `route`'s! 🪷
-  - Create joyful logs w/ `cuteLog()`, example: `cuteLog('❤️ Aloha!', 'cyan', 'bold', 'underline')` or the lower level `cuteString()`, which both include 30+ intellisense options! 💬
+1. [Free](#-how-to-deploy) global deployments, 💸 thanks to [Cloudflare](https://www.cloudflare.com/)! ☁️
+1. Smooth `SPA` navigation! 🧚‍♀️ 
+1. Define 0 to many `layouts` for `routes` to be placed within! 📥 
+1. Enjoy fast first paints, b/c all static content in the initial HTML! 😊
+1. Make multiple api calls during a page reder, have static content available immediately and stream dynamic items w/ no layout shifts, the moment each dynamic item resolves, as seen @ `npx create-solidfun@latest` ✅
+1. Directly ***within your editor***, enjoy app specific `autocomplete` ❤️, when:
+    - Creating **links**
+    - Making **API** calls
+    - Setting up **redirects**
+1. Smaller than a photo 📸 b/c even when **unminified** `Solid Fun` is less then **`150 kB`**, requires **`0 dependencies`** & features an automatically tree shaked API! 🙌
+1. On ***update***... Only ***update***... What ***updated***  💪 thanks to [Solid](https://www.solidjs.com/)! 🙏
+1. Easilly `define`, `read` and `validate`, **path or search** `params`, at **api's or route's**! 🪷
+1. When saving forms, show validation messages per input — and clear previous messages on interaction! 🎯
+1. Honorable mentions include:
+    - `cuteLog()` - Create strings w/ 30+ customization options 🎨
+    - `holdUp()` - Pause for a specific or random amount of time ⏳
+    - `loremWords()` - Generate the number of lorem words you'd love ✍️
+1. Like middleware, run `async` functions **before** your `route`'s or `api`'s boot! 🔐
+1. Simplifies cookies, session & auth, thanks to the `set`, `get` & `clear`, session data helpers! 🚨 
+1. Animate your lists beautifully, with the `<AnimatedFor />` component! 🌀
+1. Connect to MongoDB with connection pools and enjoy enhanced types for your models! 🍃
+1. Show gentle loading animations with the included `shimmer` and `loadSpin` CSS classes! ✨
+1. Features rich `examples` & `docs` directly **in your editor** --  when hovering over `Solid Fun` **types, functions and components**! 📝 & Helps us get code clean, 🧼 b/c `Solid Fun` throws ❌ when **routes or api's** change but **path's, body's or param's**, *app wide* have not... yet!
+1. Create new projects 👩‍🍼 and build the **`autocompleting intellisense types`** for existing ones 🏗️ wih our `blazingly-fast cli` ⚡️!
+  
+
+
 ## ✨ How may we get started?
 - Open a `bash` terminal, & then:
   ```bash
@@ -23,7 +37,7 @@
 
 
 ## 🧚‍♀️ Got code?!
-- 💜 Lovely API Syntax
+### GET! 💜
   ```tsx
   import { API } from '@solidfun/api'
 
@@ -31,34 +45,112 @@
   export const GET = new API({
     path: '/api/aloha',
     async fn() {
-      return { aloha: true }
+      return { aloha: true}
     }
   })
   ```
-- ❤️ Lovely Layout Syntax
-  ```tsx
-  import './Guest.css'
-  import GuestNav from './GuestNav'
-  import { Layout } from '@solidfun/layout'
 
 
-  export default new Layout({
-    component({ children }) {
-      return <>
-        <div class="guest">
-          <GuestNav />
-          {children}
-        </div>
-      </>
-    }
+### POST! 💙 
+```tsx
+import { compare } from 'bcrypt'
+import { go } from '@solidfun/go'
+import { API } from '@solidfun/api'
+import { guestB4 } from '@src/lib/b4'
+import { SessionData } from 'fun.config'
+import { M_User } from '@src/db/M_User'
+import { setSessionData } from '@solidfun/session'
+import { mongoConnect } from '@solidfun/mongoConnect'
+import { signInSchema, SignInSchema } from '@src/schemas/SignInSchema'
+
+
+export const POST = new API({
+  b4: guestB4, // run this async function b4 this route boots!
+  path: '/api/sign-in',
+  async fn({ event }) { // placed w/in a try/catch for us!
+    const body = signInSchema.parse(await event.request.json()) // get, validate & parse the request body in 1 line!
+
+    await mongoConnect() // ensures 1 mongo pool is running
+
+    const user = await M_User.get().findOne({ email: body.email }).lean()
+
+    if (!user) throw new Error('Please use valid credentials')
+
+    if (!await compare(body.password, user.passwordHash)) throw new Error('Please use valid credentials')
+
+    const sessionData: SessionData = { id: user.id }
+
+    setSessionData(sessionData)
+
+    return go('/auhenticated') // intellisense!
+  }
+})
+.body<SignInSchema>() // tells app body type for this api, so now fe.POST() will have autocomplete!
+```
+
+
+### Schema 💚
+```tsx
+import { pipe, email, string, object, nonEmpty } from 'valibot'
+import { ValibotSchema, type InferValibotSchema } from '@solidfun/valibotSchema'
+
+
+export const signInSchema = new ValibotSchema( // schema's validate (be) api's above & (fe) route's below!
+  object({
+    email: pipe(string(), email('Please provide a valid email')),
+    password: pipe(string(), nonEmpty('Please provide a password')),
   })
+)
 
-  ```
-- 💚 & Lovely Route Syntax!
+export type SignInSchema = InferValibotSchema<typeof signInSchema> // by defining runtime validations above, we get compile time types app-wide!
+```
+
+
+### Layout! 💛
+```tsx
+import './Guest.css'
+import GuestNav from './GuestNav'
+import { Layout } from '@solidfun/layout'
+
+
+export default new Layout({
+  component({ children }) {
+    return <>
+      <div class="guest">
+        <GuestNav />
+        {children}
+      </div>
+    </>
+  }
+})
+```
+
+
+### Route! 🧡
+```tsx
+import { A } from '@solidfun/a'
+import { Title } from '@solidjs/meta'
+import { Route } from '@solidfun/route'
+
+
+export default new Route({ // this route uses no layouts!
+  path: '/yin',
+  component({ fe }) {
+    return <>
+      <Title>Yin</Title>
+      <A path="/yang">Yang</A> {/* intellisense! 🙌 */}
+    </>
+  }
+})
+```
+
+
+### Form! ❤️
   ```tsx
   import { Title } from '@solidjs/meta'
   import { guestB4 } from '@src/lib/b4'
   import RootLayout from '../RootLayout'
+  import { clear } from '@solidfun/clear'
   import { Route } from '@solidfun/route'
   import GuestLayout from './Guest.Layout'
   import { Submit } from '@solidfun/submit'
@@ -68,27 +160,27 @@
 
 
   export default new Route({
-    b4: guestB4,
-    path: '/sign-up',
-    layouts: [RootLayout, GuestLayout],
+    b4: guestB4, // run this asyc fn b4 route render
+    path: '/sign-up/:sourceId?' // options path params! multi is available too!
+    layouts: [RootLayout, GuestLayout], // root wraps guest, gues wraps this route!
     component({ fe }) {
-      const onSubmit = createOnSubmit(async (fd) => { // fd() is a form data helper, createOnSubmit() places this callback() into a try/catch & on fe or be catch, <Messages /> get populated below!
-        const body = signUpSchema.parse({ // create, validate & parse the request body 🪄
+      const onSubmit = createOnSubmit(async (fd) => { // fd() is a form data helper, createOnSubmit() places this async fn() into a try/catch for us & on fe or be catch, <Messages /> get populated below!
+        const body = signUpSchema.parse({ 
           email: fd('email'),
           password: fd('password')
         }) 
 
-        await fe.POST('/api/sign-up', { body, bitKey: 'signUp' }) // a bit is a boolean signal 💃
+        await fe.POST('/api/sign-up', { body, bitKey: 'signUp' }) // a bit is a boolean signal 💃 & this path & body have intellisense!
       })
 
       return <>
         <Title>Sign Up</Title>
 
         <form onSubmit={onSubmit}>
-          <input placeholder="Email" name="email" type="email" />
-          <Messages name="email" /> {/* shows one/many messages, from signUpSchema.parse() and/or fe.POST(), for just the email input! 🚀 */}
+          <input placeholder="Email" name="email" type="email" use:clear />
+          <Messages name="email" /> {/* shows messages, from signUpSchema.parse() and/or fe.POST(), for just the email input! 🚀 */}
 
-          <input placeholder="Password" name="password" type="password" />
+          <input placeholder="Password" name="password" type="password" use:clear /> {/* the use:clear directive here clears password <Messages /> on first interaction w/ this input! */}
           <Messages name="password" />
 
           <div class="footer">
@@ -101,10 +193,6 @@
   ```
   ![Squirrel Engineer](https://i.imgur.com/V5J2qJq.jpeg)
 
-## 🤓 What is `Solid Fun`'s Purpose?
-- To provide **Solid Fundamentals**... That help create lovely web sites & mobile applications!
-- Share pictures of animal engineers! 🤣
-- & eventually, figure out how to stream the Akashic Records into an app! 😅
 
 
 ## 🚀 How to Deploy!

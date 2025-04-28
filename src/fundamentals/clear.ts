@@ -4,8 +4,8 @@
  */
 
 
-import { FE } from './fe'
-import { onCleanup } from 'solid-js'
+import { FE_Context } from './feContext'
+import { onCleanup, useContext } from 'solid-js'
 
 
 /**
@@ -13,8 +13,8 @@ import { onCleanup } from 'solid-js'
  * @param el - Element html input
  * @param value
  */
-export function clear(el: HTMLInputElement, value: () => Value) {
-  const fe = value()
+export function clear(el: HTMLInputElement) {
+  const fe = useContext(FE_Context)
   let readyToClear = true
 
   function onBlur () {
@@ -37,13 +37,10 @@ export function clear(el: HTMLInputElement, value: () => Value) {
   })
 }
 
-
-type Value = FE
-
 declare module 'solid-js' {
   namespace JSX {
     interface Directives {
-      clear: Value
+      clear: true
     }
   }
 }
