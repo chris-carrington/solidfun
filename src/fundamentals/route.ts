@@ -5,9 +5,8 @@
  */
 
 
-import type { JSX } from 'solid-js'
 import type { Layout } from './layout'
-import type { B4, RouteProps } from './types'
+import type { B4, Component } from './types'
 import { pathnameToPattern } from './pathnameToPattern'
 
 
@@ -61,7 +60,7 @@ export class Route<T_Args extends RouteArgs = {}> {
    * - If fetching data is necessary see: `beAsync()`
    * - If form submission is necessary see: `createOnSubmit()`
    */
-  component?: (args: RouteProps) => JSX.Element
+  component?: Component
 
   /**
    * - https://docs.solidjs.com/solid-router/concepts/path-parameters
@@ -131,7 +130,7 @@ export type RouteOptions = {
    * - If fetching data is necessary see: `beAsync()`
    * - If form submission is necessary see: `createOnSubmit()`
    */
-  component?: (props: RouteProps) => JSX.Element
+  component?: Component
 
   /**
    * - https://docs.solidjs.com/solid-router/concepts/path-parameters

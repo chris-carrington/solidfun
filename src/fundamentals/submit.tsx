@@ -4,7 +4,7 @@
  */
 
 
-import { FE_Context } from './feContext'
+import { useFE } from './fe'
 import { Show, useContext, type JSX } from 'solid-js'
 
 
@@ -17,7 +17,7 @@ import { Show, useContext, type JSX } from 'solid-js'
  * @param ...props - All additional props are placed onto the `<button>`
  */
 export const Submit = ({ label, bitKey, ...props }: { label: string, bitKey: string } & JSX.HTMLAttributes<HTMLButtonElement>) => {
-  const fe = useContext(FE_Context)
+  const fe = useFE()
 
   return <>
     <button {...props} type="submit" disabled={fe.bits.isOn(bitKey)}>

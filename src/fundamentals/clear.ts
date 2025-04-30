@@ -4,8 +4,8 @@
  */
 
 
-import { FE_Context } from './feContext'
-import { onCleanup, useContext } from 'solid-js'
+import { useFE } from './fe'
+import { onCleanup } from 'solid-js'
 
 
 /**
@@ -14,7 +14,7 @@ import { onCleanup, useContext } from 'solid-js'
  * @param value
  */
 export function clear(el: HTMLInputElement) {
-  const fe = useContext(FE_Context)
+  const fe = useFE()
   let readyToClear = true
 
   function onBlur () {

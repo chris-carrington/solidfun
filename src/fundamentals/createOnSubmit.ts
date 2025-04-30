@@ -5,8 +5,7 @@
  */
 
 
-import { useContext } from 'solid-js'
-import { FE_Context } from './feContext'
+import { useFE } from './fe'
 
 
 /**
@@ -34,9 +33,9 @@ import { FE_Context } from './feContext'
  * @param callback.event - The 2nd param provided to `callback()`. The `event`, of type `SubmitEvent`, is typically used when `fd()` is not low level enough
  */
 export function createOnSubmit(callback: OnSubmitCallback) {
-  return async (event: SubmitEvent) => {
-    const fe = useContext(FE_Context)
+  const fe = useFE()
 
+  return async function (event: SubmitEvent) {
     try {
       event.preventDefault()
 
@@ -45,7 +44,7 @@ export function createOnSubmit(callback: OnSubmitCallback) {
       const formData = new FormData(event.currentTarget as HTMLFormElement)
       const fd = (name: string) => formData.get(name)
 
-      const res = await callback(fd, event)
+      await callback(fd, event)
     } catch (e) {
       fe.messages.align(e)
     }

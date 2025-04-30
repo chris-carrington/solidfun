@@ -5,15 +5,15 @@
 */
   
   
+import { FE } from './fe'
 import { Layout } from './layout'
 import { Route as FunRoute } from './route'
 import { MetaProvider } from '@solidjs/meta'
 import { FileRoutes } from '@solidjs/start/router'
 import { MessagesCleanup } from '../messagesCleanup'
-import type { RouteProps, LayoutProps } from './types'
-import { useContext, Suspense, type JSX } from 'solid-js'
-import { FE_Context, FE_ContextProvider } from './feContext'
-import { Route, Router, type RouteSectionProps } from '@solidjs/router'
+import { Suspense, useContext, type JSX } from 'solid-js'
+import { FEContext, FEContextProvider } from './feContext'
+import { Route, Router, useLocation, useParams, type RouteSectionProps } from '@solidjs/router'
 
 
 /** gen */
@@ -32,9 +32,9 @@ export function createApp(Root = InternalRouterRoot) {
     return <>
       <Router root={Root}>
         <FileRoutes />
-        <Route component={props => lc(props, layout1)}>
-          <Route path={routes['/a'].path} component={props => rc(props, routes['/a'])} />
-          <Route path={routes['/b'].path} component={props => rc(props, routes['/b'])} />
+        <Route component={props => layoutComponent(props, layout1)}>
+          <Route path={routes['/a'].path} component={props => routeComponent(props, routes['/a'])} />
+          <Route path={routes['/b'].path} component={props => routeComponent(props, routes['/b'])} />
         </Route>
       </Router>
     </>
@@ -44,15 +44,20 @@ export function createApp(Root = InternalRouterRoot) {
 
 
 
-export const InternalRouterRoot: RouterRoot = (props) => <>
-  <FE_ContextProvider>
-    <MetaProvider>
-      <Suspense>
-        {props.children}
-      </Suspense>
-    </MetaProvider>
-  </FE_ContextProvider>
-</> 
+export const InternalRouterRoot: RouterRoot = (props) => {
+  const params = useParams()
+  const location = useLocation()
+
+  return <>
+    <FEContextProvider params={params} location={location}>
+      <MetaProvider>
+        <Suspense>
+          {props.children}
+        </Suspense>
+      </MetaProvider>
+    </FEContextProvider>
+  </> 
+}
 
 
 
@@ -60,45 +65,31 @@ export type RouterRoot = (props: RouteSectionProps) => JSX.Element
 
 
 
-/**
- * RC stands for Route Component
- * This gives each route render a FE object
- * @param props - The standard props that a component recieves when it is navigated to
- * @param component The component to render which is a function that returns jsx
- * @returns The response of the call to `route.component(_props)` or undefined if no route defined
- */
-function rc(props: RouteSectionProps, route: FunRoute) {
-  let res = undefined
+export function layoutComponent(props: RouteSectionProps, layout: Layout): JSX.Element {
+  return componentWithFE(props, fe => layout.component(fe))
+}
 
-  if (route instanceof FunRoute && route.component) {
-    const fe = useContext(FE_Context)
-    const _props: RouteProps = { fe, location: props.location, data: props.data, params: props.params } // route don't have children including is confusing
-    res = route.component(_props)
-  }
-
-  return <>
-    <MessagesCleanup />
-    {res}
-  </>
+export function routeComponent(props: RouteSectionProps, route: FunRoute): JSX.Element {
+  return componentWithFE(props, fe => <> <MessagesCleanup /> {route.component?.(fe)}</>)
 }
 
 
-
 /**
- * RC stands for Layout Component
- * `lc()` gets called first on each layout render and then calls the current layouts `component()` function
- * @param props - The standard props that a layout component recieves when it is navigated to
- * @param component The component to render which is a function that returns jsx
- * @returns The response of the call to `layout.component(_props)` or undefined if no route defined
+ * - Ensures:
+ *     - Layout & route get an fe
+ *     - fe is populated w/ proper info
+ *     - If somehow we don't have an fe yet we create one
+ * @param props Layout or Route props
+ * @param component The component we would love to render that we will pass an fe object
+ * @returns The component to render that will be ready to useFE()
  */
-function lc(props: RouteSectionProps, layout: Layout) {
-  let res = undefined
+function componentWithFE<T_Props extends RouteSectionProps>(props: T_Props, component: (fe: FE) => JSX.Element) {
+  const fe = useContext(FEContext)
 
-  if (layout instanceof Layout) {
-    const fe = useContext(FE_Context)
-    const _props: LayoutProps = { fe, location: props.location, data: props.data, params: props.params, children: props.children }
-    res = layout.component(_props)
+  if (fe) {
+    fe.params = props.params
+    fe.location = props.location
+    fe.children = props.children
+    return component(fe)
   }
-
-  return res
 }

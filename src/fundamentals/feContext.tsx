@@ -1,15 +1,21 @@
 /**
  * 🧚‍♀️ How to access:
- *     - import { FE_Context } from '@solidfun/feContext'
+ *     - import { FEContext } from '@solidfun/feContext'
  */
 
 
 import { FE } from './fe'
 import { createContext, type JSX } from 'solid-js'
-import { ContextProvider } from './contextProvider'
+import type { Params, Location } from '@solidjs/router'
 
 
-export const FE_Context = createContext(new FE())
+export const FEContext = createContext<FE>()
 
 
-export const FE_ContextProvider = ({children}: {children?: JSX.Element}) => <ContextProvider Context={FE_Context}>{children}</ContextProvider>
+export function FEContextProvider({ params, location, children }: { params: Params, location: Location, children?: JSX.Element }) {
+  return <>
+    <FEContext.Provider value={new FE(params, location, children)}>
+      {children}
+    </FEContext.Provider>
+  </>
+}

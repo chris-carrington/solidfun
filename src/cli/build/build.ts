@@ -3,9 +3,9 @@ import type { FunConfig } from 'solidfun'
 import { buildRead } from './buildRead.js'
 import { buildWrite } from './buildWrite.js'
 import { fundamentals } from '../../fundamentals.js'
+import { cuteLog } from '../../fundamentals/cuteLog.js'
 import path, { join, resolve, dirname } from 'node:path'
 import { supportedApiMethods } from '../../fundamentals/vars.js'
-import { cuteLog } from '../../fundamentals/cuteLog.js'
 
 
 
@@ -83,7 +83,7 @@ export class Build {
 
 
   #goodByeLog() {
-    if (!this.commandOptions.has('verbose')) cuteLog('✅ Wrote: .solidfun', 'bold', 'green')
+    if (!this.commandOptions.has('verbose')) cuteLog('🎉 Wrote: .solidfun\n', 'bold', 'green')
   }
 
 

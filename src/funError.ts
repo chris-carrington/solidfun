@@ -1,4 +1,4 @@
-import type { JSON_Response, FlatMessages } from './fundamentals/types'
+import type { JSONResponse, FlatMessages } from './fundamentals/types'
 
 
 /**
@@ -28,8 +28,8 @@ export class FunError {
    * - Typically called in the catch block of a try / cactch
    * @param options `{ error, data, defaultMessage = '❌ Sorry but an error just happened' }`
    */
-  static catch<T>(options?: { error?: any, data?: any, defaultMessage?: string }): JSON_Response<T>  {
-    let res: JSON_Response<T> | undefined
+  static catch<T>(options?: { error?: any, data?: any, defaultMessage?: string }): JSONResponse<T>  {
+    let res: JSONResponse<T> | undefined
 
     if (options?.error) {
       if (options.error instanceof FunError) res = options.error.#get<T>(options.data)
@@ -43,8 +43,8 @@ export class FunError {
   }
 
 
-  #get<T extends any>(data?: T): JSON_Response {
-    const res: JSON_Response = { data }
+  #get<T extends any>(data?: T): JSONResponse {
+    const res: JSONResponse = { data, error: null }
 
     if (this.status || this.statusText || this.message || this.messages || this.rawBody) {
       res.error = { isFunError: true }
@@ -60,7 +60,7 @@ export class FunError {
   }
 
 
-  static #simple(message: string, status: number = 400): JSON_Response {
-    return { error: { isFunError: true, status, message } }
+  static #simple(message: string, status: number = 400): JSONResponse {
+    return { data: null, error: { isFunError: true, status, message } }
   }
 }

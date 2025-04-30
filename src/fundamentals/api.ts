@@ -6,8 +6,7 @@
 
 
 
-import { BE } from './be'
-import type { B4, APIEvent } from './types'
+import type { B4, APIFn } from './types'
 import { pathnameToPattern } from './pathnameToPattern'
 
 
@@ -24,7 +23,7 @@ export class API<T_Args extends APIArgs = {}, T_Fn_Response = unknown> {
   /** url path, if not specified will use file path */
   path: string
 
-  /** The fn to be done on GET, POST, PUT or DELETE  */
+  /** The fn that runs when an API is called  */
   fn?: APIFn<T_Fn_Response>
 
   /** Turns url parameters (:param and :param?) into regex patterns to match path's */
@@ -84,12 +83,10 @@ export type APIOptions<T_Fn_Response> = {
   /** Turns url parameters (:param and :param?) into regex patterns to match path's */
   pattern?: RegExp
 
-  /** The fn to be done on GET, POST, PUT or DELETE  */
+  /** The fn that runs when an API is called  */
   fn?: APIFn<T_Fn_Response>
 }
 
-
-type APIFn<T_Fn_Response> = ({ be, event, params }: { be: BE, event:APIEvent, params: Record<string, string | undefined> }) => Promise<T_Fn_Response>
 
 
 type APIArgs<Body = unknown, Search = unknown, Params = unknown> = {

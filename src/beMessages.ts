@@ -7,7 +7,7 @@ import { DEFAULT_MESSAGE_NAME } from './fundamentals/vars'
  * - On the `BE` messages are: `Map<string, string[]>`
  * - On the `FE` messages are: `Map<string, Signal<string[]>>`
  */
-export class BE_Messages {
+export class BEMessages {
   messages: FlatMessages
 
 

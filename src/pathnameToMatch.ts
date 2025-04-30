@@ -1,5 +1,6 @@
 import { API } from './fundamentals/api'
 import { Route } from './fundamentals/route'
+import type { Params } from '@solidjs/router'
 
 
 
@@ -13,7 +14,7 @@ export function pathnameToMatch(pathname: string, map: Record<string, API | Rout
 
     if (!match) continue
 
-    const params: Record<string, string | undefined> = match.groups ?? {}
+    const params: Params = match.groups ?? {}
     const handler = map[path]! // assert okay b/c already did map[path]?.pattern above
 
     return { handler, params }
@@ -26,5 +27,5 @@ export function pathnameToMatch(pathname: string, map: Record<string, API | Rout
 
 export type RouteMatch<T_Handler> = {
   handler: T_Handler
-  params: Record<string, string | undefined>
+  params: Params
 }

@@ -4,47 +4,65 @@
  */
 
 
-import { BE_Messages } from '../beMessages'
-import type { JSON_Response } from './types'
+import { go as _go } from './go'
+import { Params } from '@solidjs/router'
+import { BEMessages } from '../beMessages'
+import { APIEvent } from '@solidjs/start/server'
+import type { JSONResponse, Routes, InferRouteParams, GoResponse } from './types'
 
 
 
 /** 
  * - Class to help
- *     - Aggregate multiple message and/or errors
- *     - So there's no reason why you couldn't respond w/ just data, just errors, or a mixture of both
- *     - Respond w/ formatted errors after a server catch
- *     - Format messages in a way that works well w/ the `<Messages />` and `<Toast />` components
+ *     - Respond w/ a consistent shape
+ *     - Access BEMessages which we can push to
  */
 export class BE {
-  messages: BE_Messages
+  event: APIEvent
+  params: Params
+  messages: BEMessages
 
 
-  constructor () {
-    this.messages = new BE_Messages()
+  constructor(event: APIEvent, params: Params) {
+    this.event = event
+    this.params = params
+    this.messages = new BEMessages()
   }
 
 
   /**
-   * - Whenever there is a random error on the serer Solid Fun will respond w/ an error in this shape
-   * - So if you'd love a common shape between data & errors use this function
-   * - & then you could do things in templates like: `{ res()?.error?.message || res()?.data?.character }`
-   * - 🚨 If any messages have been pushed to be.messages, they will appear @ res.error.messages when calling this function
+   * - Wraps "@solidjs/router" `redirect()`
+   * - Provides intellisense to current routes
+   * - same as `go()` that is typically used @ `b4()`
+   */
+  go: <T extends Routes>(path: T, params?: InferRouteParams<T>) => GoResponse = _go
+
+
+  /**
+   * - Typically called when you'd love to respond from the api w/ json
+   * - Will also add any messages to an errors object if you called be.message.push() during this call
+   * - If you'd rather respond w/ an error and no data `throw new Error()`
    * @param data - The data to respond w/
    * @returns An object that has `{ data }` and also too some errors or messages
    */
-  json<T>(data: T): JSON_Response<T> {
-    let res = {}
+  json<T>(data: T): JSONResponse<T> {
+    let res: JSONResponse<T> = { data: null, error: null }
 
-    if (data && this.messages.has()) { // data & messages
-      res = {
-        data,
-        error: { messages: this.messages.get() }
+    if (data) res.data = data
+
+    if (this.messages.has()) {
+      res.error = {
+        isFunError: true,
+        messages: this.messages.get()
       }
-    } 
-    else if (data) res = { data } // just data
-    else if (this.messages.has()) res = { messages: this.messages.get() } // just messages
+    }
 
     return res
+  }
+
+
+  /** @returns JSON of the current request body */
+  async parseRequestBody() {
+    return await this.event.request.json()
   }
 }

@@ -13,5 +13,8 @@ import type { Routes, InferRouteParams, GoResponse } from './types'
 /**
  * - Wraps "@solidjs/router" `redirect()`
  * - Provides intellisense to current routes
+ * - Typically called w/in a `b4()` fn, same as `be.go()`
  */
-export const go = <T extends Routes>(path: T, params?: InferRouteParams<T>): GoResponse => redirect(buildURL(path, params))
+export function go<T extends Routes>(path: T, params?: InferRouteParams<T>): GoResponse {
+  return redirect(buildURL(path, params))
+}

@@ -4,10 +4,10 @@
  */
 
 
-import { FE_Context } from './feContext'
+import { useFE } from './fe'
 import { feComponent } from './feComponent'
 import { DEFAULT_MESSAGE_NAME } from './vars'
-import { For, Show, useContext, type JSX } from 'solid-js'
+import { For, Show, type JSX } from 'solid-js'
 
 
 
@@ -20,7 +20,7 @@ import { For, Show, useContext, type JSX } from 'solid-js'
  * options.name - Messages are grouped by name
  */
 export const Messages = feComponent(({ name = DEFAULT_MESSAGE_NAME, ...props }: { name?: string } & JSX.HTMLAttributes<HTMLDivElement>) => {
-  const fe = useContext(FE_Context)
+  const fe = useFE()
   const [messages] = fe.messages.get(name)
 
   return <>

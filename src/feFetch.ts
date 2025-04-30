@@ -28,19 +28,6 @@ export async function feFetch(url: string, method: 'GET' | 'POST' = 'GET', body?
 
   if (response.redirected) throw window.location.href = response.url
 
-  if (response.ok === false) {
-    if (response.headers.get('content-type')?.includes('application/json')) {
-      const rawBody = await response.json()
-
-      throw new FunError({
-        rawBody,
-        message: rawBody?.error?.message,
-        status: rawBody?.error?.status || response.status,
-        statusText: response.statusText
-      })
-    }
-    else throw new FunError({ status: response.status, statusText: response.statusText, rawBody: await response.text() })
-  }
-
-  return await response.json()
+  if (response.headers.get('content-type')?.includes('application/json')) return await response.json()
+  else throw new FunError({ status: response.status, statusText: response.statusText, rawBody: await response.text() })
 }

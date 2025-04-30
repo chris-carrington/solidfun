@@ -99,7 +99,7 @@ function renderApp(build: Build) {
   build.noLayoutRoutes.forEach(route => {
     imports += getImportEntry(route.moduleName, route.fsPath, false, 'appDir', build)
     consts += getConstEntry(route.routePath, route.moduleName)
-    routes += `        <Route path={${route.moduleName}.path} component={${renderComponentProp('r', route.moduleName)}} matchFilters={${route.moduleName}.filters} />\n`
+    routes += `          <Route path={${route.moduleName}.path} component={${renderComponentProp('route', route.moduleName)}} matchFilters={${route.moduleName}.filters} />\n`
   })
 
   const marker = '/** gen */'
@@ -116,14 +116,14 @@ ${build.space}
 * - Returns a function that when called provided an <App /> component
 */
 export function createApp(Root = InternalRouterRoot) {
-return function () {
-  return <>
-    <Router root={Root}>
-      <FileRoutes />
+  return function () {
+    return <>
+      <Router root={Root}>
+        <FileRoutes />
 ${routes.slice(0,-1)}
-    </Router>
-  </>
-}
+      </Router>
+    </>
+  }
 }
 `
   /**
@@ -174,14 +174,14 @@ function walkTree(node: TreeNode, indent = 8, accumulator: TreeAccumulator = { i
   if (node.fsPath) accumulator.importsMap.set(node.fsPath, node.moduleName) // layout import
 
   if (node.moduleName !== 'root') { // open <Route>, for layout, unless virtual root
-    accumulator.routes += (' '.repeat(indent) + `<Route component={${renderComponentProp('l', node.moduleName)}}>\n`)
+    accumulator.routes += (' '.repeat(indent) + `<Route component={${renderComponentProp('layout', node.moduleName)}}>\n`)
     indent += 2
   }
 
   for (const r of node.routes) { // for each route in this layout
     accumulator.importsMap.set(r.fsPath, r.moduleName) // set route import
     accumulator.consts += getConstEntry(r.routePath, r.moduleName) // set route const entry
-    accumulator.routes += (' '.repeat(indent) + `<Route path={${r.moduleName}.path} component={${renderComponentProp('r', r.moduleName!)}} matchFilters={${r.moduleName!}.filters} />\n`) // set routes entry
+    accumulator.routes += (' '.repeat(indent) + `<Route path={${r.moduleName}.path} component={${renderComponentProp('route', r.moduleName!)}} matchFilters={${r.moduleName!}.filters} />\n`) // set routes entry
   }
 
   for (const child of node.layouts.values()) { // recurse into each child layout
@@ -198,7 +198,7 @@ function walkTree(node: TreeNode, indent = 8, accumulator: TreeAccumulator = { i
 
 
 
-const renderComponentProp = (prefix: 'r' | 'l', moduleName?: string) => `props => ${prefix}c(props, ${moduleName})`
+const renderComponentProp = (prefix: 'route' | 'layout', moduleName?: string) => `props => ${prefix}Component(props, ${moduleName})`
 
 
 const errors = {

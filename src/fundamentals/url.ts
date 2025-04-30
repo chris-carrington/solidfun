@@ -5,7 +5,7 @@
 
 
 import { buildURL } from '../buildURL'
-import type { Routes, Route_Params, GET_Paths, InferGETParams, POST_Paths, InferPOSTParams } from './types'
+import type { Routes, GET_Paths, InferGETParams, POST_Paths, InferRouteParams, InferPOSTParams } from './types'
 
 
 /**
@@ -14,7 +14,7 @@ import type { Routes, Route_Params, GET_Paths, InferGETParams, POST_Paths, Infer
  * @param params Object w/ keys from `path` & custom values, that when defined, get be placed into the `path`
  * @returns URL route string, w/o the env build url addded to the beginning
  */
-export const createRouteUrl = <T extends Routes>(path: T, params?: Route_Params<T>): string => buildURL(path, params)
+export const createRouteUrl = <T extends Routes>(path: T, params?: InferRouteParams<T>): string => buildURL(path, params)
 
 
 /**

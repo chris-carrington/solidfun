@@ -1,5 +1,6 @@
 import { createSignal, type Signal } from 'solid-js'
 import { DEFAULT_MESSAGE_NAME } from './fundamentals/vars'
+import { FunErrorType } from './fundamentals/types'
 
 
 /**
@@ -8,7 +9,7 @@ import { DEFAULT_MESSAGE_NAME } from './fundamentals/vars'
  *     - On the `BE` messages are: `Record<string, string[]>`
  *     - On the `FE` messages are: `Map<string, Signal<string[]>>`
  */
-export class FE_Messages {
+export class FEMessages {
   #messages: Map<string, Signal<string[]>> = new Map()
 
 
@@ -73,26 +74,33 @@ export class FE_Messages {
 
 
   /**
-   * - Align `res.messages` (from parsing validations) with signals
-   * - Align `res.message` (from `feFetch()` response) with signals
+   * - Align error message, or messages, with signals
    */
   align(res: any) {
-    if (res && res?.isFunError === true) {
-      if (res.messages) {
-        for (const name in res.messages) { // messages are grouped by name
-          const signal$ = this.#messages.get(name)
-  
-          if (signal$) signal$[1](res.messages[name]) // call setter
-          else this.set({ name, value: res.messages[name] }) // create setter
+    if (res && typeof res === 'object') {
+      if (res?.isFunError === true) this.#align(res)
+      else if (res?.error?.isFunError === true) this.#align(res.error)
+    }
+  }
+
+
+  #align(error: FunErrorType) {
+    if (error.messages) {
+      for (const name in error.messages) { // messages are grouped by name
+        const signal$ = this.#messages.get(name)
+
+        if (Array.isArray(error.messages[name])) {
+          if (signal$) signal$[1](error.messages[name]) // call setter
+          else this.set({ name, value: error.messages[name] }) // create setter
         }
       }
+    }
 
-      if (res.message) {
-        const signal$ = this.#messages.get(DEFAULT_MESSAGE_NAME)
-  
-        if (signal$) signal$[1]([res.message])
-        else this.set({ name: DEFAULT_MESSAGE_NAME, value: res.message })
-      }
+    if (error.message) {
+      const signal$ = this.#messages.get(DEFAULT_MESSAGE_NAME)
+
+      if (signal$) signal$[1]([error.message])
+      else this.set({ name: DEFAULT_MESSAGE_NAME, value: error.message })
     }
   }
 }

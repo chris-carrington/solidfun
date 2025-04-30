@@ -1,10 +1,10 @@
 ![Sloths developing software in a tree](https://i.imgur.com/LognTyf.jpeg)
 
 ## 🤓 `Solid Fun` Features!
-1. [Free](#-how-to-deploy) global deployments, 💸 thanks to [Cloudflare](https://www.cloudflare.com/)! ☁️
+1. [Free](#-how-to-deploy) global hosting, 💸 thanks to [Cloudflare](https://www.cloudflare.com/)! ☁️
 1. Smooth `SPA` navigation! 🧚‍♀️ 
 1. Define 0 to many `layouts` for `routes` to be placed within! 📥 
-1. Enjoy fast first paints, b/c all static content in the initial HTML! 😊
+1. Enjoy fast first paints, b/c all static content is in the initial HTML! 😊
 1. Make multiple api calls during a page reder, have static content available immediately and stream dynamic items w/ no layout shifts, the moment each dynamic item resolves, as seen @ `npx create-solidfun@latest` ✅
 1. Directly ***within your editor***, enjoy app specific `autocomplete` ❤️, when:
     - Creating **links**

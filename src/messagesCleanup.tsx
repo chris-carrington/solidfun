@@ -1,5 +1,5 @@
-import { onCleanup, useContext } from 'solid-js'
-import { FE_Context } from './fundamentals/feContext'
+import { onCleanup } from 'solid-js'
+import { useFE } from './fundamentals/fe'
 import { feComponent } from './fundamentals/feComponent'
 
 
@@ -7,8 +7,8 @@ import { feComponent } from './fundamentals/feComponent'
  * - Ensures that messages don't carry over from page to page
  */
 export const MessagesCleanup = feComponent(() => {
-  const fe = useContext(FE_Context)
-  
+  const fe = useFE()
+
   onCleanup(() => {
     fe.messages.clearAll()
   })
