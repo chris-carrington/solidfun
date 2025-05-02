@@ -5,36 +5,50 @@
 */
   
   
-import { FE } from './fe'
 import { Layout } from './layout'
 import { Route as FunRoute } from './route'
 import { MetaProvider } from '@solidjs/meta'
+import { Suspense, type JSX } from 'solid-js'
 import { FileRoutes } from '@solidjs/start/router'
 import { MessagesCleanup } from '../messagesCleanup'
-import { Suspense, useContext, type JSX } from 'solid-js'
-import { FEContext, FEContextProvider } from './feContext'
-import { Route, Router, useLocation, useParams, type RouteSectionProps } from '@solidjs/router'
+import { getFE, FEContextProvider, _setChildren } from './fe'
+import { Route, Router, type RouteSectionProps } from '@solidjs/router'
+
 
 
 /** gen */
-const layout1 = new Layout({ component() { return <></> } })
+const layout1 = new Layout()
+  .component(() => <></>)
+
+const routeA = new FunRoute('/a')
+  .component(() => <></>)
+  .layouts([layout1])
+
+const routeB = new FunRoute('/b')
+  .component(() => <></>)
+  .layouts([layout1])
+
+const routeC = new FunRoute('/c')
+  .params<{ id: string }>()
+  .layouts([layout1])
+  .component(fe => {
+    const params = fe.getParams()
+    return <></>
+  })
 
 export const routes = {
-  '/a': new FunRoute({ layouts: [layout1], path: '/a', component () { return <></> } }),
-  '/b': new FunRoute({ layouts: [layout1], path: '/b', component () { return <></> } }),
+  '/a': routeA,
+  '/b': routeB,
 }
 
-/** 
- * - Returns a function that when called provided an <App /> component
- */
 export function createApp(Root = InternalRouterRoot) {
   return function () {
     return <>
       <Router root={Root}>
         <FileRoutes />
         <Route component={props => layoutComponent(props, layout1)}>
-          <Route path={routes['/a'].path} component={props => routeComponent(props, routes['/a'])} />
-          <Route path={routes['/b'].path} component={props => routeComponent(props, routes['/b'])} />
+          <Route path={routes['/a'].values.path} component={() => routeComponent(routes['/a'])} />
+          <Route path={routes['/b'].values.path} component={() => routeComponent(routes['/b'])} />
         </Route>
       </Router>
     </>
@@ -45,11 +59,8 @@ export function createApp(Root = InternalRouterRoot) {
 
 
 export const InternalRouterRoot: RouterRoot = (props) => {
-  const params = useParams()
-  const location = useLocation()
-
   return <>
-    <FEContextProvider params={params} location={location}>
+    <FEContextProvider>
       <MetaProvider>
         <Suspense>
           {props.children}
@@ -65,31 +76,21 @@ export type RouterRoot = (props: RouteSectionProps) => JSX.Element
 
 
 
+export function routeComponent(route: FunRoute): JSX.Element | undefined {
+  const fe = getFE()
+
+  const res = route.values.component?.(fe)
+
+  return !res ? undefined : <>
+    {res}
+    <MessagesCleanup />
+  </>
+}
+
+
+
 export function layoutComponent(props: RouteSectionProps, layout: Layout): JSX.Element {
-  return componentWithFE(props, fe => layout.component(fe))
-}
-
-export function routeComponent(props: RouteSectionProps, route: FunRoute): JSX.Element {
-  return componentWithFE(props, fe => <> <MessagesCleanup /> {route.component?.(fe)}</>)
-}
-
-
-/**
- * - Ensures:
- *     - Layout & route get an fe
- *     - fe is populated w/ proper info
- *     - If somehow we don't have an fe yet we create one
- * @param props Layout or Route props
- * @param component The component we would love to render that we will pass an fe object
- * @returns The component to render that will be ready to useFE()
- */
-function componentWithFE<T_Props extends RouteSectionProps>(props: T_Props, component: (fe: FE) => JSX.Element) {
-  const fe = useContext(FEContext)
-
-  if (fe) {
-    fe.params = props.params
-    fe.location = props.location
-    fe.children = props.children
-    return component(fe)
-  }
+  const fe = getFE()
+  _setChildren(fe, props.children)
+  return layout.values.component?.(fe)
 }

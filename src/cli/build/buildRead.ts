@@ -37,11 +37,11 @@ async function setAPIWrites(fsPath: string, build: Build): Promise<void> {
   const content = removeComments(await readFile(fsPath, 'utf-8'))
 
   /**
-   * - Find: export const GET | POST new API
-   * - Then lazily skips up to the first `path:` inside the `{…}`
-   * - Puts the quoted value path in index 3
+   * - Captures:
+   *     - [1] → GET or POST
+   *     - [3] → the path string (e.g. /api/character/:element)
    */
-  const regex = /export\s+const\s+(GET|POST)\s*=\s*new\s+API\(\s*\{[\s\S]*?\bpath\s*:\s*(['"`])(.+?)\2[\s\S]*?\}\s*\)/g
+  const regex = /export\s+const\s+(GET|POST)\s*=\s*new\s+API\(\s*(['"`])(.+?)\2\)/g
 
   for (const matches of content.matchAll(regex)) {
     const apiMethod = matches[1]
@@ -124,7 +124,7 @@ function doRouteRegex(dir: string, content: string) {
   const res: { routePath: string, fsLayouts: string[] } = { routePath: '', fsLayouts: [] }
 
   // find the position of `export default new Route`
-  const regexExportDefault = /export\s+default\s+new\s+Route/
+  const regexExportDefault = /export\s+default\s+new\s+Route\s*\(\s*/m
   const matchExportDefault = regexExportDefault.exec(content)
 
   if (!matchExportDefault) return res // no export => no match
@@ -132,7 +132,7 @@ function doRouteRegex(dir: string, content: string) {
   const tail = content.slice(matchExportDefault.index + matchExportDefault[0].length) // all after export default
 
   // find the first `path:` in `tail`
-  const regexPath = /path\s*:\s*(['"`])([^'"`]+)\1/
+  const regexPath = /^\s*(['"`])([^'"`]+)\1/
   const matchPath = regexPath.exec(tail)
 
   if (!matchPath || !matchPath[2]) return res // no path => no match
@@ -140,13 +140,15 @@ function doRouteRegex(dir: string, content: string) {
   res.routePath = matchPath[2]
 
   // find the first `layouts:` in `tail`
-  const regexLayouts = /layouts\s*:\s*\[\s*([^,\s\]]+(?:\s*,\s*[^,\s\]]+)*)\s*\]/
+  const regexLayouts = /\.layouts\(\s*\[\s*([^\]]+?)\s*\]\s*\)/
   const matchLayouts = regexLayouts.exec(tail)
 
   if (matchLayouts && matchLayouts[1]) {
     const importsMap: ImportsMap = new Map()
-    const regexImports = /^import\s+([a-zA-Z_$][\w$]*)\s+from\s+(['"`])([^'"`]+)\2/gm
-    const routeLayouts = matchLayouts[1].split(/\s*,\s*/) // split on commas, trimming any incidental spaces
+    const regexImports = /^import\s+([A-Za-z_$][\w$]*)\s+from\s+(['"`])([^'"`]+)\2/gm
+    const routeLayouts = matchLayouts[1] // split on commas, trimming any incidental spaces
+      .split(/\s*,\s*/)
+      .filter(name => name.length > 0)
 
     for (const matchImports of content.matchAll(regexImports)) {
       if (matchImports[1] && matchImports[3]) importsMap.set(matchImports[1], matchImports[3])

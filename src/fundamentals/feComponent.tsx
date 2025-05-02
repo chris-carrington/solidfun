@@ -14,6 +14,7 @@ import { clientOnly } from '@solidjs/start'
  * @example
  * 
   ```ts
+  import { getFE } from './fe'
   import { onCleanup, onMount } from 'solid-js'
   import { feComponent } from '@solidfun/feComponent'
 
@@ -31,7 +32,7 @@ import { clientOnly } from '@solidjs/start'
       console.log('aloha')
     }
 
-    const fe = useFE()
+    const fe = getFE()
 
     return <div>Hi, {props.name}!</div>
   })

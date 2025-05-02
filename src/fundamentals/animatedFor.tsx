@@ -34,49 +34,45 @@ import { onMount, type JSX } from 'solid-js'
  * ---
  * 
  * @example
- * ```tsx
-import './Example.css'
-import '@solidfun/loadSpin.styles.css'
-import { Route } from '@solidfun/route'
-import { createSignal, For, Show } from 'solid-js'
-import { AnimatedFor, ForAnimator } from '@solidfun/animatedFor'
+    ```tsx
+    import '@solidfun/loadSpin.styles.css'
+    import { Route } from '@solidfun/route'
+    import { createSignal, For, Show } from 'solid-js'
+    import { AnimatedFor, ForAnimator } from '@solidfun/animatedFor'
 
 
-export default new Route({
-  path: '/fortune',
-  component({ fe }) {
-    const forAnimator = new ForAnimator()
-    const [items, setItems] = createSignal<string[]>([])
+    export default new Route('/fortunes')
+      .component((fe) => {  
+        const forAnimator = new ForAnimator()
+        const [items, setItems] = createSignal<string[]>([])
 
-    async function onClick() {
-      forAnimator.preFetch()
+        async function onClick() {
+          forAnimator.preFetch()
 
-      const res = await fe.GET('/api/example', { bitKey: 'example'})
+          const res = await fe.GET('/api/example', { bitKey: 'example'})
 
-      if (res.data) {
-        setItems([ res.data.items, ...items() ]) // bind dom
-        forAnimator.postSet()
-      }
-    }
+          if (res.data) {
+            setItems([ res.data.items, ...items() ]) // bind dom
+            forAnimator.postSet()
+          }
+        }
 
-    return <>
-      <button onClick={onClick}>
-        <Show when={fe.bits.isOn('example')} fallback="Click for Side In!">
-          <span class="load-spin--two"></span>
-        </Show>
-      </button>
+        return <>
+          <button onClick={onClick}>
+            <Show when={fe.bits.isOn('example')} fallback="Click for Side In!">
+              <span class="load-spin--two"></span>
+            </Show>
+          </button>
 
-      <AnimatedFor class="items" forAnimator={ forAnimator } items={
-        <For each={items()}>
-          {item => <div class="item">{item}</div>}
-        </For>
-      } />
-    </>
-  }
-})
- * ```
+          <AnimatedFor class="items" forAnimator={ forAnimator } items={
+            <For each={items()}>
+              {item => <div class="item">{item}</div>}
+            </For>
+          } />
+        </>
+      })
+    ```
  * 
- *  * 
  * @param options.items - SolidJS For Component 
  * @param options.forAnimator - Helper object to keep track of element positions
  * @param ...props - Go on the wrapper div element

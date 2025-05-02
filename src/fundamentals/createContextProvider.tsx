@@ -4,7 +4,6 @@
  */
 
 
-import { createStore } from 'solid-js/store'
 import type { JSX, Context } from 'solid-js'
 
 
@@ -36,8 +35,8 @@ import type { JSX, Context } from 'solid-js'
   const _user = beAsync(() => beGET('/api/user'), 'user')
 
 
-  export default new Layout({
-    component(fe) {
+  export default new Layout()
+    .component((fe) => {
       const authContext = useContext(AuthContext)
 
       const user = beParse(() => _user())
@@ -50,12 +49,11 @@ import type { JSX, Context } from 'solid-js'
       return <>
         <div class="dashboard">
           <AuthContextProvider>
-            {fe.children}
+            {fe.getChildren()}
           </AuthContextProvider>
         </div>
       </>
-    }
-  })
+    })
   ```
  * 
  * ---
@@ -74,10 +72,10 @@ import type { JSX, Context } from 'solid-js'
 export function createContextProvider<T_Initial_Value extends object>(Context: Context<T_Initial_Value>) {
   return function (props: GeneratedProviderProps<T_Initial_Value>) {
     const initialValue = props.initialValue ?? Context.defaultValue
-    const [store] = createStore(initialValue)
+    // const store = createStore(initialValue)
 
     return <>
-      <Context.Provider value={store}>
+      <Context.Provider value={initialValue}>
         {props.children}
       </Context.Provider>
     </>

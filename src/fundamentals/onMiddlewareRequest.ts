@@ -54,11 +54,11 @@ export async function onMiddlewareRequest(event: FetchEvent) {
  
  
  async function onRouteOrAPIMatched<T extends API | Route>(event: FetchEvent, routeMatch: RouteMatch<T>) {
-  if (routeMatch.handler.b4) return await routeMatch.handler.b4(event)
+  if (routeMatch.handler.values.b4) return await routeMatch.handler.values.b4(event)
  }
  
  
- async function onIsRequestingAnAPI(event: FetchEvent, pathname: string, apis: Record<string, API | Route>) {
+ async function onIsRequestingAnAPI(event: FetchEvent, pathname: string, apis: Record<string, API<any>>) {
    const routeMatch = pathnameToMatch(pathname, apis)
 
    if (routeMatch?.handler instanceof API) {

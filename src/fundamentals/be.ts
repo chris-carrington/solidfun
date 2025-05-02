@@ -5,27 +5,28 @@
 
 
 import { go as _go } from './go'
-import { Params } from '@solidjs/router'
 import { BEMessages } from '../beMessages'
 import { APIEvent } from '@solidjs/start/server'
-import type { JSONResponse, Routes, InferRouteParams, GoResponse } from './types'
+import type { JSONResponse, Routes, InferRouteParams, GoResponse, APIBody, URLSearchParams, URLParams } from './types'
 
 
 
 /** 
  * - Class to help
+ *     - Do a redirect w/ autocomplete
+ *     - Get current request event, body and/or params
  *     - Respond w/ a consistent shape
- *     - Access BEMessages which we can push to
+ *     - Access BEMessages which we can push to & sync w/ fe signals
  */
-export class BE {
+export class BE<T_Params extends URLParams = {}, T_Search extends URLSearchParams = {}, T_Body extends APIBody = {}> {
   event: APIEvent
-  params: Params
+  #params: T_Params
   messages: BEMessages
 
 
-  constructor(event: APIEvent, params: Params) {
+  constructor(event: APIEvent, params: T_Params) {
     this.event = event
-    this.params = params
+    this.#params = params
     this.messages = new BEMessages()
   }
 
@@ -61,8 +62,14 @@ export class BE {
   }
 
 
-  /** @returns JSON of the current request body */
-  async parseRequestBody() {
-    return await this.event.request.json()
+  /** @returns Current request body via `await event.request.json()`  */
+  async getBody() {
+    return await this.event.request.json() as T_Body
+  }
+
+
+  /** @returns The url params object  */
+  getParams() {
+    return this.#params
   }
 }

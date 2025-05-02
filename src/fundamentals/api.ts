@@ -5,92 +5,137 @@
  */
 
 
-
-import type { B4, APIFn } from './types'
+import type { BE } from './be'
 import { pathnameToPattern } from './pathnameToPattern'
+import type { APIBody, URLSearchParams, URLParams, B4 } from './types'
 
 
 
 /** - Create a GET or POST, API endpoint */
-export class API<T_Args extends APIArgs = {}, T_Fn_Response = unknown> {
+export class API<
+  T_Params extends APIBody = {},
+  T_Search extends URLSearchParams = {},
+  T_Body extends URLParams = {},
+  T_Fn_Response extends Function | unknown = unknown
+> {
+  public readonly values: {
+    path: string
+    pattern: RegExp
+    b4?: B4
+    fn?: APIFn<T_Params, T_Search, T_Body, T_Fn_Response>
+  }
+
+  constructor(path: string) {
+    this.values = {
+      path,
+      pattern: pathnameToPattern(path),
+    }
+  }
+
+
   /** 
-   * - IF `b4()` return is truthy => returned value is sent to the client & route handler is not processed
+   * ### Set async function to run before api boot
+   * - IF `b4()` return is truthy => returned value is sent to the client & api fn is not processed
    * - It is not recomended to do db calls in this function
-   * - `b4()` purpose is to swiftly read event contents, append `event.locals`, `event.request` or `event.response`, do a redirect, or nothing and allow route or api fn to to process next
+   * - `b4()` purpose is to:
+   *     - Read `event` contents (headers, cookies)
+   *     - Append `event.locals`, `event.request` or `event.response`
+   *     - Do a redirect
+   *     - Return nothing and allow api fn to to process next
+   * - 🚨 If returning the response must be a `Response` object b/c this is what is given to the client
+   * - 🚨 When calling `go()` from w/in a `b4` a return type is required, b/c ts needs to know about all api's when we call `go()` to provide autocomplete but we are defining an api while calling `go()`. So the return type stops the loop of defining & searching
+   * @example
+    ```ts
+    import { API } from '@solidfun/api'
+    import { authB4 } from '@src/lib/b4'
+    import { M_Contract } from '@src/db/M_Contract'
+
+    export const GET = new API('/api/contract/:contractId')
+      .b4(authB4)
+      .params<{contractId: string}>()
+      .fn(async (be) => {
+        return be.json({ params: be.getParams() })
+      })
+    ```
    */
-  b4?: B4
-
-  /** url path, if not specified will use file path */
-  path: string
-
-  /** The fn that runs when an API is called  */
-  fn?: APIFn<T_Fn_Response>
-
-  /** Turns url parameters (:param and :param?) into regex patterns to match path's */
-  pattern: RegExp
-
-  constructor(options: APIOptions<T_Fn_Response>){
-    this.b4 = options.b4
-    this.path = options.path
-    this.fn = options.fn
-    this.pattern = options.pattern || pathnameToPattern(options.path)
-  }
-
-
-  /**
-   * - Add to API, updated type info:
-   *     - `Omit<T_Args, 'Body'>`:Omit from `T_Args` the existing `Body` type 
-   *     - `& { Body: T_Body }`:  Add to `T_Args` a new `Body` type
-   */
-  body<T_Body>(): API<Omit<T_Args, 'Body'> & { Body: T_Body }, T_Fn_Response> {
+  b4(fn: B4): this {
+    this.values.b4 = fn
     return this
   }
 
 
-  /**
-   * - Add to API, updated type info:
-   *     - `Omit<T_Args, 'Search'>`: Omit from `T_Args` the existing `Search` type 
-   *     - `& { Search: T_Search }`: Add to `T_Args` a new `Search` type
-   */
-  search<T_Search>(): API<Omit<T_Args, 'Search'> & { Search: T_Search }, T_Fn_Response> {
-    return this
-  }
-
-
-  /**
-   * - Add to API, updated type info:
-   *     - `Omit<T_Args, 'Params'>`: Omit from `T_Args` the existing `Params` type 
-   *     - `& { Params: T_Params }`: Add to `T_Args` a new `Params` type
-   */
-  params<T_Params>(): API<Omit<T_Args, 'Params'> & { Params: T_Params }, T_Fn_Response> {
-    return this
-  }
-}
-
-
-
-export type APIOptions<T_Fn_Response> = {
   /** 
-   * - IF `b4()` return is truthy => returned value is sent to the client & route handler is not processed
-   * - It is not recomended to do db calls in this function
-   * - `b4()` purpose is to swiftly read event contents, append `event.locals`, `event.request` or `event.response`, do a redirect, or nothing and allow route or api fn to to process next
+   * ### Set async function to run when api is called
+   * @example
+    ```ts
+    import { API } from '@solidfun/api'
+    import { authB4 } from '@src/lib/b4'
+    import { M_Contract } from '@src/db/M_Contract'
+
+    export const GET = new API('/api/contract/:contractId')
+      .b4(authB4)
+      .params<{contractId: string}>()
+      .fn(async (be) => {
+        return be.json({ params: be.getParams() })
+      })
+    ```
    */
-  b4?: B4,
+  fn<T_New_Fn_Response>(fn: APIFn<T_Params, T_Search, T_Body, T_New_Fn_Response>): API<T_Params, T_Search, T_Body, T_New_Fn_Response> {
+    (this.values as any).fn = fn
+    return this as unknown as API<T_Params, T_Search, T_Body, T_New_Fn_Response>
+  }
 
-  /** url path, if not specified will use file path */
-  path: string
 
-  /** Turns url parameters (:param and :param?) into regex patterns to match path's */
-  pattern?: RegExp
+  /**
+   * ### Set the type for the url params
+   * - If `.params()` is below `.fn() `then `.fn()` won't have typesafety
+   * @example
+    ```ts
+    export const GET = new API('/api/fortune/:id')]
+      .params<{ id: number }>()
+      .fn(async (be) => {
+        const params = be.getParams()
+        return be.json({ params })
+      })
+    ```
+   */
+  params<T_New_Params extends URLParams>(): API<T_New_Params, T_Search, T_Body, T_Fn_Response> {
+    return this as unknown as API<T_New_Params, T_Search, T_Body, T_Fn_Response>
+  }
 
-  /** The fn that runs when an API is called  */
-  fn?: APIFn<T_Fn_Response>
+
+  /**
+   * ### Set the type for the request body
+   * - If `.body()` is below `.fn() `then `.fn()` won't have typesafety
+   * @example
+    ```ts
+    import { API } from '@solidfun/api'
+    import { authB4 } from '@src/lib/b4'
+    import { parseSessionData } from '@src/lib/parseSessionData'
+    import { createIndividualSchema, CreateIndividualSchema } from '@src/schemas/CreateIndividualSchema'
+
+
+    export const POST = new API('/api/create-individual')
+      .b4(authB4)
+      .body<CreateIndividualSchema>()
+      .fn(async (be) => {
+        const body = createIndividualSchema.parse(await be.getBody())
+
+        const {userId} = await parseSessionData()
+
+        return be.json({ userId, body })
+      })
+    ```
+   */
+  body<T_New_Body extends APIBody>(): API<T_Params, T_Search, T_New_Body, T_Fn_Response> {
+    return this as unknown as API<T_Params, T_Search, T_New_Body, T_Fn_Response>
+  }
 }
 
 
-
-type APIArgs<Body = unknown, Search = unknown, Params = unknown> = {
-  Body?: Body
-  Search?: Search
-  Params?: Params
-}
+export type APIFn<
+  T_Params extends Record<any, any>,
+  T_Search extends Record<string, string | string[]>,
+  T_Body extends Record<any, any>,
+  T_Fn_Response
+> = (be: BE<T_Params, T_Search, T_Body>) => Promise<T_Fn_Response>

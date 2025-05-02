@@ -4,7 +4,7 @@
  */
 
 
-import { useFE } from './fe'
+import { getFE } from './fe'
 import { onCleanup } from 'solid-js'
 
 
@@ -14,7 +14,7 @@ import { onCleanup } from 'solid-js'
  * @param value
  */
 export function clear(el: HTMLInputElement) {
-  const fe = useFE()
+  const fe = getFE()
   let readyToClear = true
 
   function onBlur () {

@@ -5,7 +5,7 @@
  */
 
 
-import { useFE } from './fe'
+import { getFE } from './fe'
 
 
 /**
@@ -33,7 +33,7 @@ import { useFE } from './fe'
  * @param callback.event - The 2nd param provided to `callback()`. The `event`, of type `SubmitEvent`, is typically used when `fd()` is not low level enough
  */
 export function createOnSubmit(callback: OnSubmitCallback) {
-  const fe = useFE()
+  const fe = getFE()
 
   return async function (event: SubmitEvent) {
     try {

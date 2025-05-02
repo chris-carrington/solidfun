@@ -5,19 +5,20 @@
  */
 
 
-import type { Component } from './types'
+import type { LayoutComponent } from './types'
+
 
 
 export class Layout {
-  component: Component
+  public readonly values: LayoutValues = {}
 
-
-  constructor(options: LayoutOptions) {
-    this.component = options.component
+  component(fn: LayoutComponent): this {
+    this.values.component = fn
+    return this
   }
 }
 
 
-export type LayoutOptions = {
-  component: Component,
+type LayoutValues = {
+  component?: LayoutComponent
 }

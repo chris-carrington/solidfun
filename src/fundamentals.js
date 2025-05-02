@@ -47,7 +47,6 @@ export const fundamentals = new Map([
   ['eventToPathname', new Fundamental('ts', 'solid', 'helper')],
   ['fe', new Fundamental('ts', 'solid', 'copy')],
   ['feComponent', new Fundamental('tsx', 'solid', 'copy')],
-  ['feContext', new Fundamental('tsx', 'solid', 'copy')],
   ['feFetch', new Fundamental('ts', 'solid', 'helper')],
   ['feMessages', new Fundamental('ts', 'solid', 'helper')],
   ['funError', new Fundamental('ts', 'solid', 'helper')],

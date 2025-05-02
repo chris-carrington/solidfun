@@ -32,10 +32,10 @@ function getPromises(build: Build) {
 
   if (build.config.plugins.solid) {
     promises.push(
+      fsWrite({ build, dir: build.dirWriteFundamentals, content: build.fsSolidTypes || '', fileName: 'types.d.ts' }),
       fsWrite({ build, dir: build.dirWriteFundamentals, content: renderEnv(build), fileName: 'env.ts' }),
       fsWrite({ build, dir: build.dirWriteFundamentals, content: renderApi(build), fileName: 'apis.ts' }),
       fsWrite({ build, dir: build.dirWriteFundamentals, content: renderApp(build), fileName: 'app.tsx' }),
-      fsWrite({ build, dir: build.dirWriteFundamentals, content: renderTypes(build), fileName: 'types.d.ts' }),
     )
   }
 
@@ -99,7 +99,7 @@ function renderApp(build: Build) {
   build.noLayoutRoutes.forEach(route => {
     imports += getImportEntry(route.moduleName, route.fsPath, false, 'appDir', build)
     consts += getConstEntry(route.routePath, route.moduleName)
-    routes += `          <Route path={${route.moduleName}.path} component={${renderComponentProp('route', route.moduleName)}} matchFilters={${route.moduleName}.filters} />\n`
+    routes += `          <Route path={${route.moduleName}.values.path} component={${renderRouteComponent(route.moduleName)}} matchFilters={${route.moduleName}.filters} />\n`
   })
 
   const marker = '/** gen */'
@@ -139,31 +139,6 @@ ${routes.slice(0,-1)}
 
 
 
-function renderTypes(build: Build) {
-  const index = build.fsSolidTypes?.indexOf('/** gen */')
-
-  if (index === -1) throw new Error(errors.noGenTypesTxt)
-
-  return build.fsSolidTypes?.slice(0, index) + renderDynamicTypes(build)
-}
-
-
-
-function renderDynamicTypes(build: Build) {
-  return `/** Current application routes */
-export type Routes = ${!build.writes.pipeRoutes ? 'string' : build.writes.pipeRoutes.slice(0,-2)}
-
-
-/** Current api GET endpoint url paths */
-export type GET_Paths = ${!build.writes.pipeGET ? 'string' : build.writes.pipeGET.slice(0,-2)}
-
-
-/** Current api POST endpoint url paths */
-export type POST_Paths = ${!build.writes.pipePOST ? 'string' : build.writes.pipePOST.slice(0,-2)}\n`
-}
-
-
-
 /**
  * - Walk the entire tree, once, building the accumulator
  * - Accumulator: Mutable object that we pass along in a recursive function to collect or `accumulate` results as we go
@@ -174,14 +149,14 @@ function walkTree(node: TreeNode, indent = 8, accumulator: TreeAccumulator = { i
   if (node.fsPath) accumulator.importsMap.set(node.fsPath, node.moduleName) // layout import
 
   if (node.moduleName !== 'root') { // open <Route>, for layout, unless virtual root
-    accumulator.routes += (' '.repeat(indent) + `<Route component={${renderComponentProp('layout', node.moduleName)}}>\n`)
+    accumulator.routes += (' '.repeat(indent) + `<Route component={${renderLayoutComponent(node.moduleName)}}>\n`)
     indent += 2
   }
 
   for (const r of node.routes) { // for each route in this layout
     accumulator.importsMap.set(r.fsPath, r.moduleName) // set route import
     accumulator.consts += getConstEntry(r.routePath, r.moduleName) // set route const entry
-    accumulator.routes += (' '.repeat(indent) + `<Route path={${r.moduleName}.path} component={${renderComponentProp('route', r.moduleName!)}} matchFilters={${r.moduleName!}.filters} />\n`) // set routes entry
+    accumulator.routes += (' '.repeat(indent) + `<Route path={${r.moduleName}.values.path} component={${renderRouteComponent(r.moduleName)}} matchFilters={${r.moduleName!}.filters} />\n`) // set routes entry
   }
 
   for (const child of node.layouts.values()) { // recurse into each child layout
@@ -198,7 +173,9 @@ function walkTree(node: TreeNode, indent = 8, accumulator: TreeAccumulator = { i
 
 
 
-const renderComponentProp = (prefix: 'route' | 'layout', moduleName?: string) => `props => ${prefix}Component(props, ${moduleName})`
+const renderLayoutComponent = (moduleName?: string) => `props => layoutComponent(props, ${moduleName})`
+
+const renderRouteComponent = (moduleName?: string) => `() => routeComponent(${moduleName})`
 
 
 const errors = {
