@@ -2,7 +2,7 @@
   "name": "solidfun",
   "license": "MIT",
   "type": "module",
-  "version": "0.0.36",
+  "version": "0.0.37",
   "types": "dist/index.d.ts",
   "author": "Christopher Carrington",
   "homepage": "https://github.com/chris-carrington/solidfun#readme",
