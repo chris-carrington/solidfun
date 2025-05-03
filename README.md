@@ -1,31 +1,43 @@
 ![Sloths developing software in a tree](https://i.imgur.com/LognTyf.jpeg)
 
 ## 🤓 `Solid Fun` Features!
+### Standard
 1. [Free](#-how-to-deploy) global hosting, 💸 thanks to [Cloudflare](https://www.cloudflare.com/)! ☁️
 1. Smooth `SPA` navigation! 🧚‍♀️ 
-1. Define 0 to many `layouts` for `routes` to be placed within! 📥 
-1. Enjoy fast first paints, b/c all static content is in the initial HTML! 😊
-1. Make multiple api calls during a page reder, have static content available immediately and stream dynamic items w/ no layout shifts, the moment each dynamic item resolves, as seen @ `npx create-solidfun@latest` ✅
-1. Directly ***within your editor***, enjoy app specific `autocomplete` ❤️, when:
-    - Creating **links**
-    - Making **API** calls
-    - Setting up **redirects**
-1. Smaller than a photo 📸 b/c even when **unminified** `Solid Fun` is less then **`150 kB`**, requires **`0 dependencies`** & features an automatically tree shaked API! 🙌
 1. On ***update***... Only ***update***... What ***updated***  💪 thanks to [Solid](https://www.solidjs.com/)! 🙏
-1. Easilly `define`, `read` and `validate`, **path or search** `params`, at **api's or route's**! 🪷
-1. When saving forms, show validation messages per input — and clear previous messages on interaction! 🎯
-1. Honorable mentions include:
-    - `cuteLog()` - Create strings w/ 30+ customization options 🎨
-    - `holdUp()` - Pause for a specific or random amount of time ⏳
-    - `loremWords()` - Generate the number of lorem words you'd love ✍️
+1. **`In editor`**, **`autocomplete`** & **`typesafety`** @:
+    - Config
+    - Anchor Tags
+    - Frontend (FE) or Backend (BE) Redirects
+    - Requests that start server side (be), to your api, during page load
+    - Requests that start in the browser (fe), to your api, after page load
+
+### Security
+1. Smaller than a photo 📸 b/c even when **unminified** `Solid Fun` is less then **`150 kB`**, requires **`0 dependencies`** & features an automatically & beautifully, tree shaked API! 🙌
+1. Simplify cookies, sessions & auth, thanks to the `set()`, `get()` & `clear()`, session data helpers! 🚨 
 1. Like middleware, run `async` functions **before** your `route`'s or `api`'s boot! 🔐
-1. Simplifies cookies, session & auth, thanks to the `set`, `get` & `clear`, session data helpers! 🚨 
-1. Animate your lists beautifully, with the `<AnimatedFor />` component! 🌀
-1. Connect to MongoDB with connection pools and enjoy enhanced types for your models! 🍃
-1. Show gentle loading animations with the included `shimmer` and `loadSpin` CSS classes! ✨
-1. Features rich `examples` & `docs` directly **in your editor** --  when hovering over `Solid Fun` **types, functions and components**! 📝 & Helps us get code clean, 🧼 b/c `Solid Fun` throws ❌ when **routes or api's** change but **path's, body's or param's**, *app wide* have not... yet!
-1. Create new projects 👩‍🍼 and build the **`autocompleting intellisense types`** for existing ones 🏗️ wih our `blazingly-fast cli` ⚡️!
-  
+
+### Routes & API
+1. Define 0 to many `layouts` for `routes` to be placed within! 📥 
+1. `Define`, `read` and `validate`, **path or search** `params`, at **api's or route's**! 🪷
+1. Enjoy fast initial page load times, b/c all static content is in the initial HTML! 😊
+1. Have static content available immediately, make multiple api calls during a page reder, and as each dynamic promise resolves (ex: database data), stream that item back to the frontend! 🎉
+1. So when Request processing begins on the server, so does dynamic data gathering. If dynamic data is ready before the page has been built that dynamic data will be included in the initial page load and all else will stream once that item is ready! 💫
+
+### Getting Started
+1. Create new projects 👩‍🍼 and build the **`autocompleting intellisense types`** for existing ones 🏗️ wih our `blazingly-fast cli`! ⚡️
+1. A super simple api, with tons of [JSDOC](https://jsdoc.app/) comments for in editor docs & examples  when hovering over `Solid Fun` **types, functions and components**! 🤓
+
+### Honorable Mentions
+1. `<AnimatedFor />`: Animate your lists beautifully & smoothly with CSS animations! 🌀
+1. `<Messages />` When saving forms, show error messages for the form as a hole & also show validation messages per input, by the input! 🎯
+1. `Shimmer` & `LoadSpin`: Show gentle loading animations with CSS classes! ✨
+1. `mongoConnect()` & `mongoModel()`: Manage mongoose data pools & enhance standard mongo typesafety!
+1. `cuteLog()` - Create strings w/ 30+ customization options 🎨
+1. `holdUp()` - Pause for a specific or random amount of time ⏳
+1. `loremWords()` - Generate the number of lorem words you'd love ✍️
+
+
 
 
 ## ✨ How may we get started?
@@ -38,20 +50,45 @@
 
 ## 🧚‍♀️ Got code?!
 ### GET! 💜
-  ```tsx
-  import { API } from '@solidfun/api'
+```tsx
+import { API } from '@solidfun/api'
 
-
-  export const GET = new API({
-    path: '/api/aloha',
-    async fn() {
-      return { aloha: true}
-    }
+export const GET = new API('/api/aloha')
+  .fn(async (be) => {
+    return be.json({ aloha: true })
   })
-  ```
+```
 
 
-### POST! 💙 
+### Params! 💙
+- Required & optional params available @ `routes` & `apis`!
+```tsx
+import { API } from '@solidfun/api'
+
+export const GET = new API('/api/aloha/:id/:ascend?')
+  .params<{ id: number, ascend: boolean }>() // set params type here & then this api's params are known @ .fn() & app-wide 🙌
+  .fn(async (be) => {
+    const params = be.getParams()
+    return be.json({ params })
+  })
+```
+
+
+### Middleware! 💚
+- Available @ `routes` & `apis`!
+```tsx
+import { API } from '@solidfun/api'
+import { authB4 } from '@src/lib/b4'
+
+export const GET = new API('/api/aloha')
+  .b4(authB4) // run this async function b4 this api boots!
+  .fn(async (be) => {
+    return be.json({ aloha: true })
+  })
+```
+
+
+### POST! 🧡
 ```tsx
 import { compare } from 'bcrypt'
 import { go } from '@solidfun/go'
@@ -64,11 +101,11 @@ import { mongoConnect } from '@solidfun/mongoConnect'
 import { signInSchema, SignInSchema } from '@src/schemas/SignInSchema'
 
 
-export const POST = new API({
-  b4: guestB4, // run this async function b4 this route boots!
-  path: '/api/sign-in',
-  async fn({ event }) { // placed w/in a try/catch for us!
-    const body = signInSchema.parse(await event.request.json()) // get, validate & parse the request body in 1 line!
+export const POST = new API('/api/sign-in')
+  .b4(guestB4)
+  .body<SignInSchema>() // tells .fn() & app-wide the request body this api requires
+  .fn((be) => {
+    const body = signInSchema.parse(await be.getBody()) // get, validate & parse the request body in 1 line!
 
     await mongoConnect() // ensures 1 mongo pool is running
 
@@ -82,14 +119,14 @@ export const POST = new API({
 
     setSessionData(sessionData)
 
-    return go('/auhenticated') // intellisense!
+    return be.go('/auhenticated') // go() knows about all your routes & provides autocomplete!
   }
 })
-.body<SignInSchema>() // tells app body type for this api, so now fe.POST() will have autocomplete!
+
 ```
 
 
-### Schema 💚
+### Schema 💛
 ```tsx
 import { pipe, email, string, object, nonEmpty } from 'valibot'
 import { ValibotSchema, type InferValibotSchema } from '@solidfun/valibotSchema'
@@ -106,42 +143,39 @@ export type SignInSchema = InferValibotSchema<typeof signInSchema> // by definin
 ```
 
 
-### Layout! 💛
+### Layout! ❤️
 ```tsx
 import './Guest.css'
 import GuestNav from './GuestNav'
 import { Layout } from '@solidfun/layout'
 
 
-export default new Layout({
-  component({ children }) {
+export default new Layout()
+  .component((fe) => {
     return <>
       <div class="guest">
         <GuestNav />
-        {children}
+        {fe.getChildren()}
       </div>
     </>
-  }
-})
+  })
 ```
 
 
-### Route! 🧡
+### Route! 🌟
 ```tsx
 import { A } from '@solidfun/a'
 import { Title } from '@solidjs/meta'
 import { Route } from '@solidfun/route'
 
 
-export default new Route({ // this route uses no layouts!
-  path: '/yin',
-  component({ fe }) {
+export default new Route('/yin') // this route uses no layouts!
+  .component((fe) => {
     return <>
       <Title>Yin</Title>
-      <A path="/yang">Yang</A> {/* intellisense! 🙌 */}
+      <A path="/yang">Yang</A> {/* <A /> knows about your routes & provides autocomplete! 🙌 */}
     </>
-  }
-})
+  })
 ```
 
 
@@ -159,18 +193,17 @@ export default new Route({ // this route uses no layouts!
   import { createOnSubmit } from '@solidfun/createOnSubmit'
 
 
-  export default new Route({
-    b4: guestB4, // run this asyc fn b4 route render
-    path: '/sign-up/:sourceId?' // options path params! multi is available too!
-    layouts: [RootLayout, GuestLayout], // root wraps guest, gues wraps this route!
-    component({ fe }) {
-      const onSubmit = createOnSubmit(async (fd) => { // fd() is a form data helper, createOnSubmit() places this async fn() into a try/catch for us & on fe or be catch, <Messages /> get populated below!
-        const body = signUpSchema.parse({ 
-          email: fd('email'),
+  export default new Route('/sign-up/:sourceId?')
+    .b4(guestB4) // run this asyc fn b4 route render
+    .layouts([RootLayout, GuestLayout]) // Root wraps Guest, Guest wraps this Route!
+    .component((fe) => {
+      const onSubmit = createOnSubmit(async (fd) => { // createOnSubmit() places this async fn() into a try/catch for us & on fe or be catch, <Messages /> get populated below!
+        const body = signUpSchema.parse({ // get parse & validate request body
+          email: fd('email'), // fd() is a form data helper
           password: fd('password')
         }) 
 
-        await fe.POST('/api/sign-up', { body, bitKey: 'signUp' }) // a bit is a boolean signal 💃 & this path & body have intellisense!
+        await fe.POST('/api/sign-up', { body, bitKey: 'signUp' }) // a bit is a boolean signal 💃 & this path & body have autocomplete!
       })
 
       return <>
@@ -180,7 +213,7 @@ export default new Route({ // this route uses no layouts!
           <input placeholder="Email" name="email" type="email" use:clear />
           <Messages name="email" /> {/* shows messages, from signUpSchema.parse() and/or fe.POST(), for just the email input! 🚀 */}
 
-          <input placeholder="Password" name="password" type="password" use:clear /> {/* the use:clear directive here clears password <Messages /> on first interaction w/ this input! */}
+          <input placeholder="Password" name="password" type="password" use:clear /> {/* the use:clear directive clears password <Messages /> on first interaction w/ this input! */}
           <Messages name="password" />
 
           <div class="footer">
